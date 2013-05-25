@@ -4,7 +4,8 @@
     "description": "Hoodie interface to CouchDB",
     "main": "lib/hoodie-db.js",
     "dependencies": {
-        "request": "2.21.0"
+        "request": "2.21.0",
+        "underscore": "1.4.4"
     },
     "devDependencies": {
         "multicouch": "0.2.8",

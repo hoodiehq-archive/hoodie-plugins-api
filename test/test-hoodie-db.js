@@ -43,6 +43,8 @@ function startCouch(data_dir, callback) {
     var couch_cfg = {
         port: COUCH_PORT,
         prefix: data_dir,
+        couchdb_path: '/usr/bin/couchdb',
+        default_sys_ini: '/etc/couchdb/default.ini',
         respawn: false // otherwise causes problems shutting down
     };
     // starts a local couchdb server using the Hoodie app's data dir
@@ -50,7 +52,7 @@ function startCouch(data_dir, callback) {
     // local couchdb has started
     couchdb.on('start', function () {
         // give it time to be ready for requests
-        setTimeout(function () { callback(null, couchdb); }, 2000);
+        pollCouch(couchdb, callback);
     });
     couchdb.on('error', callback);
     couchdb.start();
@@ -63,6 +65,22 @@ function createAdmin(name, pass, callback) {
         body: JSON.stringify(pass)
     }, callback);
 }
+
+function pollCouch(couchdb, callback) {
+    function _poll() {
+        request(COUCH_URL, function (err, res, body) {
+            if (res && res.statusCode === 200) {
+                return callback(null, couchdb);
+            }
+            else {
+                // wait and try again
+                return setTimeout(_poll, 100);
+            }
+        });
+    }
+    // start polling
+    _poll();
+};
 
 exports.integration = {
     setUp: function (callback) {
@@ -89,10 +107,7 @@ exports.integration = {
 
     },
     tearDown: function (callback) {
-        this.couchdb.once('stop', function () {
-            // delete couchdb data directory
-            rimraf(__dirname + '/data', callback);
-        });
+        this.couchdb.once('stop', callback);
         this.couchdb.stop();
     }
 };

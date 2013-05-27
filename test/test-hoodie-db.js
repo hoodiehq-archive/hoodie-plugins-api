@@ -216,20 +216,14 @@ exports['createDatabase - db_updates queue'] = function (test) {
             queue: q
         });
 
-        hdb.createDatabase('foo', function (err, res, body) {
-            if (err) {
-                return test.done(err);
-            }
-            test.done();
-        });
+        hdb.createDatabase('foo', test.done);
     });
 };
 
 exports['deleteDatabase - db_updates queue'] = function (test) {
     withCouch(function (err, couchdb) {
-        test.expect(4);
+        test.expect(2);
 
-        var counter = 0;
         var q = {
             publish: function (queue, body, callback) {
                 test.equal(queue, 'id1234/_db_updates');
@@ -250,29 +244,6 @@ exports['deleteDatabase - db_updates queue'] = function (test) {
             queue: q
         });
 
-        var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
-
-        async.series([
-            async.apply(hdb.createDatabase, 'foo'),
-            function (cb) {
-                request(dburl, {json: true}, function (err, res, body) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    test.equals(res.statusCode, 200);
-                    cb();
-                });
-            },
-            async.apply(hdb.deleteDatabase, 'foo'),
-            function (cb) {
-                request(dburl, {json: true}, function (err, res, body) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    test.equals(res.statusCode, 404);
-                    cb();
-                });
-            }
-        ], test.done);
+        hdb.deleteDatabase('foo', test.done);
     });
 };

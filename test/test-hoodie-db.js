@@ -128,73 +128,7 @@ function pollCouch(couchdb, callback) {
 
 exports['createDatabase'] = function (test) {
     withCouch(function (err, couchdb) {
-        var hdb = hoodiedb({
-            url: COUCH_URL,
-            user: USER,
-            pass: PASS,
-            app_id: 'id1234',
-            admin_db: '_users',
-            queue: ignored_queue
-        });
-        hdb.createDatabase('foo', function (err) {
-            if (err) {
-                return test.done(err);
-            }
-            var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
-            request(dburl, {json: true}, function (err, res, body) {
-                if (err) {
-                    return test.done(err);
-                }
-                test.equals(res.statusCode, 200);
-                test.done();
-            });
-        });
-    });
-};
-
-exports['deleteDatabase'] = function (test) {
-    withCouch(function (err, couchdb) {
-        test.expect(2);
-
-        var hdb = hoodiedb({
-            url: COUCH_URL,
-            user: USER,
-            pass: PASS,
-            app_id: 'id1234',
-            admin_db: '_users',
-            queue: ignored_queue
-        });
-
-        var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
-
-        async.series([
-            async.apply(hdb.createDatabase, 'foo'),
-            function (cb) {
-                request(dburl, {json: true}, function (err, res, body) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    test.equals(res.statusCode, 200);
-                    cb();
-                });
-            },
-            async.apply(hdb.deleteDatabase, 'foo'),
-            function (cb) {
-                request(dburl, {json: true}, function (err, res, body) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    test.equals(res.statusCode, 404);
-                    cb();
-                });
-            }
-        ], test.done);
-    });
-};
-
-exports['createDatabase - db_updates queue'] = function (test) {
-    withCouch(function (err, couchdb) {
-        test.expect(2);
+        test.expect(3);
 
         var q = {
             publish: function (queue, body, callback) {
@@ -216,13 +150,26 @@ exports['createDatabase - db_updates queue'] = function (test) {
             queue: q
         });
 
-        hdb.createDatabase('foo', test.done);
+        hdb.createDatabase('foo', function (err) {
+            if (err) {
+                return test.done(err);
+            }
+            var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
+            request(dburl, {json: true}, function (err, res, body) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.equals(res.statusCode, 200);
+                test.done();
+            });
+        });
+
     });
 };
 
-exports['deleteDatabase - db_updates queue'] = function (test) {
+exports['deleteDatabase'] = function (test) {
     withCouch(function (err, couchdb) {
-        test.expect(2);
+        test.expect(3);
 
         var q = {
             publish: function (queue, body, callback) {
@@ -244,6 +191,19 @@ exports['deleteDatabase - db_updates queue'] = function (test) {
             queue: q
         });
 
-        hdb.deleteDatabase('foo', test.done);
+        hdb.deleteDatabase('foo', function (err) {
+            if (err) {
+                return test.done(err);
+            }
+            var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
+            request(dburl, {json: true}, function (err, res, body) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.equals(res.statusCode, 404);
+                test.done();
+            });
+        });
+
     });
 };

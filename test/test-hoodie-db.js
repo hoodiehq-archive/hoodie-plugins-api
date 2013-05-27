@@ -237,3 +237,16 @@ exports['only _admins can access created dbs'] = function (test) {
         });
     });
 };
+
+exports['databases.info'] = function (test) {
+    test.expect(1);
+
+    var hoodie = hdb.createClient(base_opts);
+    hoodie.databases.info('bar', function (err, res, body) {
+        if (err) {
+            return test.done(err);
+        }
+        test.equal(JSON.parse(body).db_name, 'id1234/bar');
+        test.done();
+    });
+};

@@ -1,4 +1,4 @@
-var hoodiedb = require('../lib/hoodie-db'),
+var hdb = require('../lib/hoodie-db'),
     MultiCouch = require('multicouch'),
     request = require('request'),
     mkdirp = require('mkdirp'),
@@ -6,7 +6,7 @@ var hoodiedb = require('../lib/hoodie-db'),
     async = require('async');
 
 
-exports['validate options'] = function (test) {
+exports['createClient - validate options'] = function (test) {
     var options = {
         url: 'http://foo',
         user: 'bar',
@@ -17,19 +17,22 @@ exports['validate options'] = function (test) {
     };
     // no errors on complete options object
     test.doesNotThrow(function () {
-        hoodiedb(options);
+        hdb.createClient(options);
     });
     // missing any one options causes an error
     function testWithout(prop) {
         var opt = JSON.parse(JSON.stringify(options));
         delete opt[prop];
-        test.throws(function () { hoodiedb(opt); }, new RegExp(prop));
+        test.throws(function () {
+            hdb.createClient(opt);
+        },
+        new RegExp(prop));
     }
     for (var k in options) {
         testWithout(k);
     }
     // passing no options causes error
-    test.throws(function () { hoodiedb(); });
+    test.throws(function () { hdb.createClient(); });
     test.done();
 };
 
@@ -126,7 +129,7 @@ function pollCouch(couchdb, callback) {
     _poll();
 };
 
-exports['createDatabase'] = function (test) {
+exports['database.create'] = function (test) {
     withCouch(function (err, couchdb) {
         test.expect(3);
 
@@ -141,7 +144,7 @@ exports['createDatabase'] = function (test) {
             }
         };
 
-        var hdb = hoodiedb({
+        var hoodie = hdb.createClient({
             url: COUCH_URL,
             user: USER,
             pass: PASS,
@@ -150,7 +153,7 @@ exports['createDatabase'] = function (test) {
             queue: q
         });
 
-        hdb.createDatabase('foo', function (err) {
+        hoodie.databases.create('foo', function (err) {
             if (err) {
                 return test.done(err);
             }
@@ -182,7 +185,7 @@ exports['deleteDatabase'] = function (test) {
             }
         };
 
-        var hdb = hoodiedb({
+        var hoodie = hdb.createClient({
             url: COUCH_URL,
             user: USER,
             pass: PASS,
@@ -191,7 +194,7 @@ exports['deleteDatabase'] = function (test) {
             queue: q
         });
 
-        hdb.deleteDatabase('foo', function (err) {
+        hoodie.databases.remove('foo', function (err) {
             if (err) {
                 return test.done(err);
             }

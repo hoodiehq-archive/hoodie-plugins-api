@@ -264,3 +264,17 @@ exports['databases.head'] = function (test) {
         test.done();
     });
 };
+
+exports['databases.list'] = function (test) {
+    test.expect(2);
+
+    var hoodie = hdb.createClient(base_opts);
+    hoodie.databases.list(function (err, res, body) {
+        if (err) {
+            return test.done(err);
+        }
+        test.equal(res.statusCode, 200);
+        test.equal(body, '["bar"]');
+        test.done();
+    });
+};

@@ -5,14 +5,14 @@
     "main": "lib/hoodie-db.js",
     "dependencies": {
         "request": "2.21.0",
-        "underscore": "1.4.4"
+        "underscore": "1.4.4",
+        "async": "0.2.8"
     },
     "devDependencies": {
         "multicouch": "0.2.8",
         "nodeunit": "latest",
         "mkdirp": "0.3.5",
-        "rimraf": "2.1.4",
-        "async": "0.2.8"
+        "rimraf": "2.1.4"
     },
     "scripts": {
         "test": "node_modules/.bin/nodeunit test"

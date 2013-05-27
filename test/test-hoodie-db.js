@@ -3,7 +3,8 @@ var hdb = require('../lib/hoodie-db'),
     request = require('request'),
     mkdirp = require('mkdirp'),
     rimraf = require('rimraf'),
-    async = require('async');
+    async = require('async'),
+    _ = require('underscore');
 
 
 exports['createClient - validate options'] = function (test) {
@@ -37,11 +38,6 @@ exports['createClient - validate options'] = function (test) {
 };
 
 
-var ignored_queue = {
-    publish: function (name, body, callback) {
-        return callback();
-    }
-};
 
 
 var COUCH_PORT = 8985;
@@ -129,6 +125,20 @@ function pollCouch(couchdb, callback) {
     _poll();
 };
 
+
+var base_opts = {
+    url: COUCH_URL,
+    user: USER,
+    pass: PASS,
+    app_id: 'id1234',
+    admin_db: '_users',
+    queue: {
+        publish: function (name, body, callback) {
+            return callback();
+        }
+    }
+};
+
 exports['database.create'] = function (test) {
     withCouch(function (err, couchdb) {
         test.expect(3);
@@ -144,21 +154,20 @@ exports['database.create'] = function (test) {
             }
         };
 
-        var hoodie = hdb.createClient({
-            url: COUCH_URL,
-            user: USER,
-            pass: PASS,
-            app_id: 'id1234',
-            admin_db: '_users',
+        var hoodie = hdb.createClient(_.extend(base_opts, {
             queue: q
-        });
+        }));
 
         hoodie.databases.create('foo', function (err) {
             if (err) {
                 return test.done(err);
             }
             var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
-            request(dburl, {json: true}, function (err, res, body) {
+            var opts = {
+                json: true,
+                auth: {user: USER, pass: PASS}
+            };
+            request(dburl, opts, function (err, res, body) {
                 if (err) {
                     return test.done(err);
                 }
@@ -185,21 +194,20 @@ exports['deleteDatabase'] = function (test) {
             }
         };
 
-        var hoodie = hdb.createClient({
-            url: COUCH_URL,
-            user: USER,
-            pass: PASS,
-            app_id: 'id1234',
-            admin_db: '_users',
+        var hoodie = hdb.createClient(_.extend(base_opts, {
             queue: q
-        });
+        }));
 
         hoodie.databases.remove('foo', function (err) {
             if (err) {
                 return test.done(err);
             }
             var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
-            request(dburl, {json: true}, function (err, res, body) {
+            var opts = {
+                json: true,
+                auth: {user: USER, pass: PASS}
+            };
+            request(dburl, function (err, res, body) {
                 if (err) {
                     return test.done(err);
                 }
@@ -208,5 +216,24 @@ exports['deleteDatabase'] = function (test) {
             });
         });
 
+    });
+};
+
+exports['only _admins can access created dbs'] = function (test) {
+    test.expect(1);
+
+    var hoodie = hdb.createClient(base_opts);
+    hoodie.databases.create('bar', function (err, res, body) {
+        if (err) {
+            return test.done(err);
+        }
+        var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/bar');
+        request(dburl + '/_all_docs', {json: true}, function (err, res, body) {
+            if (err) {
+                return test.done(err);
+            }
+            test.equals(res.statusCode, 401);
+            test.done();
+        });
     });
 };

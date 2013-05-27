@@ -250,3 +250,17 @@ exports['databases.info'] = function (test) {
         test.done();
     });
 };
+
+exports['databases.head'] = function (test) {
+    test.expect(2);
+
+    var hoodie = hdb.createClient(base_opts);
+    hoodie.databases.head('bar', function (err, res, body) {
+        if (err) {
+            return test.done(err);
+        }
+        test.equal(res.statusCode, 200);
+        test.ok(!body);
+        test.done();
+    });
+};

@@ -139,7 +139,7 @@ var base_opts = {
     }
 };
 
-exports['database.create'] = function (test) {
+exports['database.add'] = function (test) {
     withCouch(function (err, couchdb) {
         test.expect(3);
 
@@ -158,7 +158,7 @@ exports['database.create'] = function (test) {
             queue: q
         }));
 
-        hoodie.databases.create('foo', function (err) {
+        hoodie.databases.add('foo', function (err) {
             if (err) {
                 return test.done(err);
             }
@@ -223,7 +223,7 @@ exports['only _admins can access created dbs'] = function (test) {
     test.expect(1);
 
     var hoodie = hdb.createClient(base_opts);
-    hoodie.databases.create('bar', function (err, res, body) {
+    hoodie.databases.add('bar', function (err, res, body) {
         if (err) {
             return test.done(err);
         }

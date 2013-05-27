@@ -12,7 +12,8 @@ exports['validate options'] = function (test) {
         user: 'bar',
         pass: 'baz',
         app_id: 'id1234',
-        admin_db: '_users'
+        admin_db: '_users',
+        queue: {}
     };
     // no errors on complete options object
     test.doesNotThrow(function () {
@@ -118,7 +119,8 @@ exports.integration['createDatabase'] = function (test) {
         user: USER,
         pass: PASS,
         app_id: 'id1234',
-        admin_db: '_users'
+        admin_db: '_users',
+        queue: {}
     });
     hdb.createDatabase('foo', function (err) {
         if (err) {
@@ -132,5 +134,74 @@ exports.integration['createDatabase'] = function (test) {
             test.equals(res.statusCode, 200);
             test.done();
         });
+    });
+};
+
+exports.integration['deleteDatabase'] = function (test) {
+    test.expect(2);
+
+    var hdb = hoodiedb({
+        url: COUCH_URL,
+        user: USER,
+        pass: PASS,
+        app_id: 'id1234',
+        admin_db: '_users',
+        queue: {}
+    });
+
+    var dburl = COUCH_URL + '/' + encodeURIComponent('id1234/foo');
+
+    async.series([
+        async.apply(hdb.createDatabase, 'foo'),
+        function (cb) {
+            request(dburl, {json: true}, function (err, res, body) {
+                if (err) {
+                    return cb(err);
+                }
+                test.equals(res.statusCode, 200);
+                cb();
+            });
+        },
+        async.apply(hdb.deleteDatabase, 'foo'),
+        function (cb) {
+            request(dburl, {json: true}, function (err, res, body) {
+                if (err) {
+                    return cb(err);
+                }
+                test.equals(res.statusCode, 404);
+                cb();
+            });
+        }
+    ], test.done);
+};
+
+exports.integration['createDatabase - db_updates queue'] = function (test) {
+    test.expect(2);
+
+    var q = {
+        publish: function (queue, body, callback) {
+            test.equal(queue, 'id1234/_db_updates');
+            test.same(body, {
+                dbname: 'id1234/foo',
+                type: 'created'
+            });
+            return callback();
+        }
+    };
+
+    var hdb = hoodiedb({
+        url: COUCH_URL,
+        user: USER,
+        pass: PASS,
+        app_id: 'id1234',
+        admin_db: '_users',
+        queue: q
+    });
+
+    hdb.createDatabase('foo', function (err, res, body) {
+        if (err) {
+            return test.done(err);
+        }
+        test.done();
     });
 };

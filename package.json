@@ -6,7 +6,9 @@
     "dependencies": {
         "request": "2.21.0",
         "underscore": "1.4.4",
-        "async": "0.2.8"
+        "async": "0.2.8",
+        "pouchdb": "0.0.12",
+        "couchr": "0.0.13"
     },
     "devDependencies": {
         "multicouch": "0.2.8",

@@ -1,7 +1,6 @@
-var hdb = require('../lib/hoodie-db'),
+var HoodieDB = require('../lib/index'),
     MultiCouch = require('multicouch'),
     child_process = require('child_process'),
-    //Pouch = require('pouchdb'),
     request = require('request'),
     mkdirp = require('mkdirp'),
     rimraf = require('rimraf'),
@@ -11,7 +10,7 @@ var hdb = require('../lib/hoodie-db'),
 
 var tests = {};
 
-tests['createClient - validate options'] = function (base_opts) {
+tests['HoodieDB - validate options'] = function (base_opts) {
     return function (test) {
         var options = {
             db: 'http://bar:baz@foo',
@@ -20,24 +19,28 @@ tests['createClient - validate options'] = function (base_opts) {
             queue: {}
         };
         // no errors on complete options object
-        test.doesNotThrow(function () {
-            hdb.createClient(options);
+        HoodieDB(options, function (err, hoodie) {
+            test.ok(!err);
+            // missing any one options causes an error
+            function testWithout(prop, cb) {
+                var opt = JSON.parse(JSON.stringify(options));
+                delete opt[prop];
+                HoodieDB(opt, function (err, hoodie) {
+                    test.ok(err);
+                    cb();
+                });
+            }
+            async.each(Object.keys(options), testWithout, function (err) {
+                if (err) {
+                    return test.done(err);
+                }
+                // passing no options causes error
+                HoodieDB(null, function (err) {
+                    test.ok(err);
+                    test.done();
+                });
+            });
         });
-        // missing any one options causes an error
-        function testWithout(prop) {
-            var opt = JSON.parse(JSON.stringify(options));
-            delete opt[prop];
-            test.throws(function () {
-                hdb.createClient(opt);
-            },
-            new RegExp(prop));
-        }
-        for (var k in options) {
-            testWithout(k);
-        }
-        // passing no options causes error
-        test.throws(function () { hdb.createClient(); });
-        test.done();
     };
 };
 
@@ -54,22 +57,24 @@ tests['databases.add'] = function (base_opts) {
                 return callback();
             }
         };
-        var hoodie = hdb.createClient(_.extend(base_opts, {
+        var opts = _.extend(base_opts, {
             queue: q
-        }));
-        hoodie.databases.add('foo', function (err) {
+        });
+        HoodieDB(opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
-            var db = Pouch(
-                base_opts.db + '/' + encodeURIComponent('id1234/foo')
-            );
-            db.info(function (err, response) {
+            hoodie.databases.add('foo', function (err) {
                 if (err) {
                     return test.done(err);
                 }
-                test.equals(response.db_name, 'id1234/foo');
-                test.done();
+                hoodie.databases.info('foo', function (err, response) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    test.ok(/id1234(?:\/|%2F)foo$/.test(response.db_name));
+                    test.done();
+                });
             });
         });
     };
@@ -92,29 +97,33 @@ tests['databases.remove'] = function (base_opts) {
                 return callback();
             }
         };
-        var hoodie = hdb.createClient(_.extend(base_opts, {
+        var opts = _.extend(base_opts, {
             queue: q
-        }));
-        hoodie.databases.add('foo', function (err) {
+        });
+        HoodieDB(opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
-            hoodie.databases.list(function (err, dbs) {
+            hoodie.databases.add('foo', function (err) {
                 if (err) {
                     return test.done(err);
                 }
-                test.ok(_.contains(dbs, 'foo'));
-                hoodie.databases.remove('foo', function (err) {
+                hoodie.databases.list(function (err, dbs) {
                     if (err) {
-                        console.log(['got error', arguments]);
                         return test.done(err);
                     }
-                    hoodie.databases.list(function (err, dbs) {
+                    test.ok(_.contains(dbs, 'foo'));
+                    hoodie.databases.remove('foo', function (err) {
                         if (err) {
                             return test.done(err);
                         }
-                        test.ok(!_.contains(dbs, 'foo'));
-                        test.done();
+                        hoodie.databases.list(function (err, dbs) {
+                            if (err) {
+                                return test.done(err);
+                            }
+                            test.ok(!_.contains(dbs, 'foo'));
+                            test.done();
+                        });
                     });
                 });
             });
@@ -125,18 +134,22 @@ tests['databases.remove'] = function (base_opts) {
 tests['databases.info'] = function (base_opts) {
     return function (test) {
         test.expect(1);
-        var hoodie = hdb.createClient(base_opts);
-        hoodie.databases.add('bar', function (err) {
+        HoodieDB(base_opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
-            hoodie.databases.info('bar', function (err, response) {
+            hoodie.databases.add('bar', function (err) {
                 if (err) {
                     return test.done(err);
                 }
-                test.equal(response.db_name, 'id1234/bar');
-                hoodie.databases.remove('bar', function (err) {
-                    test.done();
+                hoodie.databases.info('bar', function (err, response) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    test.ok(/id1234(?:\/|%2F)bar$/.test(response.db_name));
+                    hoodie.databases.remove('bar', function (err) {
+                        test.done();
+                    });
                 });
             });
         });
@@ -146,22 +159,26 @@ tests['databases.info'] = function (base_opts) {
 tests['databases.list'] = function (base_opts) {
     return function (test) {
         test.expect(2);
-        var hoodie = hdb.createClient(base_opts);
-        hoodie.databases.list(function (err, response) {
+        HoodieDB(base_opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
-            test.same(response, []);
-            hoodie.databases.add('foo', function (err, response) {
+            hoodie.databases.list(function (err, response) {
                 if (err) {
                     return test.done(err);
                 }
-                hoodie.databases.list(function (err, response) {
+                test.same(response, []);
+                hoodie.databases.add('foo', function (err, response) {
                     if (err) {
                         return test.done(err);
                     }
-                    test.same(response, ['foo']);
-                    test.done();
+                    hoodie.databases.list(function (err, response) {
+                        if (err) {
+                            return test.done(err);
+                        }
+                        test.same(response, ['foo']);
+                        test.done();
+                    });
                 });
             });
         });
@@ -304,4 +321,20 @@ Object.keys(tests).forEach(function (name) {
             tests[name](couchdb_base_opts)(test);
         });
     };
+});
+
+var pouchdb_base_opts = {
+    db: 'leveldb://' + __dirname + '/data/pouch',
+    app_id: 'id1234',
+    admins: '_users',
+    queue: {
+        publish: function (name, body, callback) {
+            return callback();
+        }
+    }
+};
+
+exports.pouchdb = {};
+Object.keys(tests).forEach(function (name) {
+    exports.pouchdb[name] = tests[name](pouchdb_base_opts);
 });

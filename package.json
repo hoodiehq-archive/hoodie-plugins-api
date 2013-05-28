@@ -2,18 +2,18 @@
     "name": "hoodie-db",
     "version": "0.0.1",
     "description": "Hoodie interface to CouchDB",
-    "main": "lib/hoodie-db.js",
+    "main": "lib/index.js",
     "dependencies": {
         "request": "2.21.0",
         "underscore": "1.4.4",
         "async": "0.2.8",
-        "pouchdb": "0.0.12",
-        "couchr": "0.0.13"
+        "pouchdb": "git://github.com/daleharvey/pouchdb.git",
+        "couchr": "0.0.13",
+        "mkdirp": "0.3.5"
     },
     "devDependencies": {
         "multicouch": "0.2.8",
         "nodeunit": "latest",
-        "mkdirp": "0.3.5",
         "rimraf": "2.1.4"
     },
     "scripts": {

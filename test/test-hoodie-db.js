@@ -37,7 +37,12 @@ tests['HoodieDB - validate options'] = function (base_opts) {
                 // passing no options causes error
                 HoodieDB(null, function (err) {
                     test.ok(err);
-                    test.done();
+                    // invalid backend causes error
+                    var opts = _.extend(options, {db: 'foo://bar'});
+                    HoodieDB(opts, function (err) {
+                        test.ok(err);
+                        test.done();
+                    });
                 });
             });
         });

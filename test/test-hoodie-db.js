@@ -190,6 +190,50 @@ tests['databases.list'] = function (base_opts) {
     };
 };
 
+tests['docs.all'] = function (base_opts) {
+    return function (test) {
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            var doc = {
+                _id: 'abc123',
+                title: 'bar'
+            };
+            async.series([
+                async.apply(hoodie.databases.add, 'foo'),
+                async.apply(hoodie.docs.all, 'foo'),
+                async.apply(hoodie.docs.save, 'foo', doc),
+                async.apply(hoodie.docs.all, 'foo')
+            ],
+            function (err, results) {
+                if (err) {
+                    return test.done(err);
+                }
+                var res1 = results[1];
+                if (Array.isArray(res1)) {
+                    res1 = res1[0];
+                }
+                var res2 = results[3];
+                if (Array.isArray(res2)) {
+                    res2 = res2[0];
+                }
+                test.equal(res1.total_rows, 0);
+                test.same(res1.rows, []);
+                test.equal(res2.total_rows, 1);
+                test.equal(res2.rows.length, 1);
+                test.equal(res2.rows[0].id, 'abc123');
+                test.done();
+                // TODO: test options for all_docs, eg include_docs: true
+            });
+        });
+    };
+};
+
+// TODO: docs.save tests
+
+
+
 
 // make CouchDB tests
 

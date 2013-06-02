@@ -48,3 +48,12 @@ Saves `doc` to `db`. If the doc has no `_id` property then a new doc is
 created and the id is generated for you. Otherwise, it will either create
 a new doc with the given id, or it will update an existing document with
 that id.
+
+### hoodie.docs.get(db, id, callback)
+
+Gets the doc with the given id from the databaese `db`
+
+### hoodie.docs.remove(db, doc, callback)
+
+Removes `doc` from `db`. The doc should have the latest `_rev` value set,
+or this will result in a document update conflict.

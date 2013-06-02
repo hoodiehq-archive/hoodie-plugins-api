@@ -1,7 +1,7 @@
 # API
 
 
-## HoodieDB(options) => hoodie
+## HoodieDB(options, callback)
 
 Creates a new db client instance to talk to the backend database. In the
 case of Hoodie modules, you won't need to call this as you will be passed
@@ -9,8 +9,12 @@ an instance already set up for the application.
 
 __Options__
 
-* db - Database location / CouchDB URL
-* app\_id - unique identification for the app
+* __db__ - Database location / CouchDB URL
+* __app\_id__ - unique identification for the app
+
+__Returns__
+
+A `hoodie` instance, as used in below APIs.
 
 
 ## Databases

@@ -63,7 +63,7 @@ tests['databases.add'] = function (base_opts) {
                         return test.done(err);
                     }
                     test.ok(/foo$/.test(response.db_name));
-                    test.done();
+                    hoodie.databases.remove('foo', test.done);
                 });
             });
         });
@@ -120,9 +120,7 @@ tests['databases.info'] = function (base_opts) {
                         return test.done(err);
                     }
                     test.ok(/bar$/.test(response.db_name));
-                    hoodie.databases.remove('bar', function (err) {
-                        test.done();
-                    });
+                    hoodie.databases.remove('bar', test.done);
                 });
             });
         });
@@ -150,7 +148,7 @@ tests['databases.list'] = function (base_opts) {
                             return test.done(err);
                         }
                         test.same(response, ['foo']);
-                        test.done();
+                        hoodie.databases.remove('foo', test.done);
                     });
                 });
             });
@@ -172,8 +170,7 @@ tests['docs.all'] = function (base_opts) {
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.docs.all, 'foo'),
                 async.apply(hoodie.docs.save, 'foo', doc),
-                async.apply(hoodie.docs.all, 'foo'),
-                async.apply(hoodie.databases.remove, 'foo'),
+                async.apply(hoodie.docs.all, 'foo')
             ],
             function (err, results) {
                 if (err) {
@@ -183,23 +180,30 @@ tests['docs.all'] = function (base_opts) {
                 if (Array.isArray(res1)) {
                     res1 = res1[0];
                 }
-                var res2 = results[3];
+                var res2 = results[2];
                 if (Array.isArray(res2)) {
                     res2 = res2[0];
                 }
+                var res3 = results[3];
+                if (Array.isArray(res3)) {
+                    res3 = res3[0];
+                }
                 test.equal(res1.total_rows, 0);
                 test.same(res1.rows, []);
-                test.equal(res2.total_rows, 1);
-                test.equal(res2.rows.length, 1);
-                test.equal(res2.rows[0].id, 'abc123');
-                test.done();
+                test.equal(res3.total_rows, 1);
+                test.equal(res3.rows.length, 1);
+                test.equal(res3.rows[0].id, 'abc123');
+                hoodie.docs.remove('foo', {
+                    _id: 'abc123',
+                    _rev: res2.rev
+                },
+                test.done);
                 // TODO: test options for all_docs, eg include_docs: true
             });
         });
     };
 };
 
-// TODO: docs.save tests
 tests['docs.save'] = function (base_opts) {
     return function (test) {
         HoodieDB(base_opts, function (err, hoodie) {
@@ -214,8 +218,7 @@ tests['docs.save'] = function (base_opts) {
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.docs.all, 'foo'),
                 async.apply(hoodie.docs.save, 'foo', doc),
-                async.apply(hoodie.docs.all, 'foo'),
-                async.apply(hoodie.databases.remove, 'foo'),
+                async.apply(hoodie.docs.all, 'foo')
             ],
             function (err, results) {
                 if (err) {
@@ -225,17 +228,115 @@ tests['docs.save'] = function (base_opts) {
                 if (Array.isArray(res1)) {
                     res1 = res1[0];
                 }
-                var res2 = results[3];
+                var res2 = results[2];
                 if (Array.isArray(res2)) {
                     res2 = res2[0];
                 }
+                var res3 = results[3];
+                if (Array.isArray(res3)) {
+                    res3 = res3[0];
+                }
                 test.equal(res1.total_rows, 0);
                 test.same(res1.rows, []);
-                test.equal(res2.total_rows, 1);
-                test.equal(res2.rows.length, 1);
-                test.equal(res2.rows[0].id, 'abc123');
-                test.done();
-                // TODO: test options for all_docs, eg include_docs: true
+                test.equal(res3.total_rows, 1);
+                test.equal(res3.rows.length, 1);
+                test.equal(res3.rows[0].id, 'abc123');
+                hoodie.docs.remove('foo', {
+                    _id: 'abc123',
+                    _rev: res2.rev
+                },
+                test.done);
+            });
+        });
+    };
+};
+
+tests['docs.get'] = function (base_opts) {
+    return function (test) {
+        test.expect(2);
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            var doc = {
+                _id: 'abc123',
+                title: 'bar'
+            };
+            async.series([
+                async.apply(hoodie.databases.add, 'foo'),
+                async.apply(hoodie.docs.save, 'foo', doc),
+                async.apply(hoodie.docs.get, 'foo', 'abc123')
+            ],
+            function (err, results) {
+                if (err) {
+                    return test.done(err);
+                }
+                var res1 = results[1];
+                if (Array.isArray(res1)) {
+                    res1 = res1[0];
+                }
+                var doc2 = results[2];
+                if (Array.isArray(doc2)) {
+                    doc2 = doc2[0];
+                }
+                test.equal(doc2.title, doc.title);
+                test.ok(doc2._rev);
+                hoodie.docs.remove('foo', {
+                    _id: 'abc123',
+                    _rev: res1.rev
+                },
+                test.done);
+            });
+        });
+    };
+};
+
+tests['docs.remove'] = function (base_opts) {
+    return function (test) {
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            var doc = {
+                _id: 'abc123',
+                title: 'bar'
+            };
+            async.series([
+                async.apply(hoodie.databases.add, 'foo'),
+                async.apply(hoodie.docs.save, 'foo', doc),
+                async.apply(hoodie.docs.all, 'foo'),
+            ],
+            function (err, results) {
+                if (err) {
+                    return test.done(err);
+                }
+                var res1 = results[2];
+                if (Array.isArray(res1)) {
+                    res1 = res1[0];
+                }
+                test.equal(res1.total_rows, 1);
+                test.equal(res1.rows.length, 1);
+                test.equal(res1.rows[0].id, 'abc123');
+
+                hoodie.docs.get('foo', 'abc123', function (err, doc) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    async.series([
+                        async.apply(hoodie.docs.remove, 'foo', doc),
+                        async.apply(hoodie.docs.all, 'foo'),
+                        async.apply(hoodie.databases.remove, 'foo'),
+                    ],
+                    function (err, results) {
+                        var res2 = results[1];
+                        if (Array.isArray(res2)) {
+                            res2 = res2[0];
+                        }
+                        test.equal(res2.total_rows, 0);
+                        test.same(res2.rows, []);
+                        test.done();
+                    });
+                });
             });
         });
     };

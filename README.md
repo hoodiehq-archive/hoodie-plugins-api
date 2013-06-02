@@ -1,7 +1,7 @@
 # API
 
 
-## HoodieDB(options)
+## HoodieDB(options) => hoodie
 
 Creates a new db client instance to talk to the backend database. In the
 case of Hoodie modules, you won't need to call this as you will be passed
@@ -13,7 +13,7 @@ __Options__
 * app\_id - unique identification for the app
 
 
-## databases
+## Databases
 
 ### hoodie.databases.add(name, callback)
 
@@ -32,7 +32,7 @@ Provides information on the given database.
 Returns a list of all databases related to the app.
 
 
-## docs
+## Docs
 
 ### hoodie.docs.all(db, callback)
 

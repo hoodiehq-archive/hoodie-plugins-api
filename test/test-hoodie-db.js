@@ -14,9 +14,7 @@ tests['HoodieDB - validate options'] = function (base_opts) {
     return function (test) {
         var options = {
             db: 'http://bar:baz@foo',
-            app_id: 'id1234',
-            admins: '_users',
-            queue: {}
+            app_id: 'id1234'
         };
         // no errors on complete options object
         HoodieDB(options, function (err, hoodie) {

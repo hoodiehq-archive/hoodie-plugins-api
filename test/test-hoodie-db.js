@@ -51,21 +51,8 @@ tests['HoodieDB - validate options'] = function (base_opts) {
 
 tests['databases.add'] = function (base_opts) {
     return function (test) {
-        test.expect(3);
-        var q = {
-            publish: function (queue, body, callback) {
-                test.equal(queue, 'id1234/_db_updates');
-                test.same(body, {
-                    dbname: 'id1234/foo',
-                    type: 'created'
-                });
-                return callback();
-            }
-        };
-        var opts = _.extend(base_opts, {
-            queue: q
-        });
-        HoodieDB(opts, function (err, hoodie) {
+        test.expect(1);
+        HoodieDB(base_opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
@@ -77,7 +64,7 @@ tests['databases.add'] = function (base_opts) {
                     if (err) {
                         return test.done(err);
                     }
-                    test.ok(/id1234(?:\/|%2F)foo$/.test(response.db_name));
+                    test.ok(/foo$/.test(response.db_name));
                     test.done();
                 });
             });
@@ -87,25 +74,8 @@ tests['databases.add'] = function (base_opts) {
 
 tests['databases.remove'] = function (base_opts) {
     return function (test) {
-        test.expect(4);
-        var q = {
-            publish: function (queue, body, callback) {
-                if (body.type === 'created') {
-                    // ignore first created event
-                    return callback();
-                }
-                test.equal(queue, 'id1234/_db_updates');
-                test.same(body, {
-                    dbname: 'id1234/foo',
-                    type: 'deleted'
-                });
-                return callback();
-            }
-        };
-        var opts = _.extend(base_opts, {
-            queue: q
-        });
-        HoodieDB(opts, function (err, hoodie) {
+        test.expect(2);
+        HoodieDB(base_opts, function (err, hoodie) {
             if (err) {
                 return test.done(err);
             }
@@ -151,7 +121,7 @@ tests['databases.info'] = function (base_opts) {
                     if (err) {
                         return test.done(err);
                     }
-                    test.ok(/id1234(?:\/|%2F)bar$/.test(response.db_name));
+                    test.ok(/bar$/.test(response.db_name));
                     hoodie.databases.remove('bar', function (err) {
                         test.done();
                     });

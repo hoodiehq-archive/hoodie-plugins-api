@@ -304,7 +304,7 @@ tests['docs.remove'] = function (base_opts) {
             async.series([
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.docs.save, 'foo', doc),
-                async.apply(hoodie.docs.all, 'foo'),
+                async.apply(hoodie.docs.all, 'foo')
             ],
             function (err, results) {
                 if (err) {
@@ -324,8 +324,7 @@ tests['docs.remove'] = function (base_opts) {
                     }
                     async.series([
                         async.apply(hoodie.docs.remove, 'foo', doc),
-                        async.apply(hoodie.docs.all, 'foo'),
-                        async.apply(hoodie.databases.remove, 'foo'),
+                        async.apply(hoodie.docs.all, 'foo')
                     ],
                     function (err, results) {
                         var res2 = results[1];
@@ -335,6 +334,64 @@ tests['docs.remove'] = function (base_opts) {
                         test.equal(res2.total_rows, 0);
                         test.same(res2.rows, []);
                         test.done();
+                    });
+                });
+            });
+        });
+    };
+};
+
+tests['docs.changes'] = function (base_opts) {
+    return function (test) {
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            hoodie.databases.add('foo', function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                hoodie.databases.info('foo', function (err, info) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    var changes = [];
+                    var opts = {
+                        include_docs: true,
+                        continuous: true,
+                        since: info.update_seq,
+                        onChange: function (change) {
+                            changes.push(change);
+                        }
+                    };
+                    hoodie.docs.changes('foo', opts, function (err, feed) {
+                        var doc = {
+                            _id: 'asdfasdf',
+                            title: 'bar'
+                        };
+                        // create
+                        hoodie.docs.save('foo', doc, function (err, data) {
+                            if (err) {
+                                return test.done(err);
+                            }
+                            doc._rev = data.rev;
+                            // delete
+                            hoodie.docs.remove('foo', doc, function (err) {
+                                if (err) {
+                                    return test.done(err);
+                                }
+                                // give the changes feed time to reconnect
+                                setTimeout(function () {
+                                    test.equal(changes.length, 2);
+                                    test.equal(changes[0].id, doc._id);
+                                    test.equal(changes[0].doc.title, 'bar');
+                                    test.equal(changes[1].id, doc._id);
+                                    test.equal(changes[1].doc._deleted, true);
+                                    feed.cancel();
+                                    test.done();
+                                }, 100);
+                            });
+                        });
                     });
                 });
             });
@@ -422,7 +479,7 @@ function startCouch(data_dir, callback) {
             if (err) {
                 return callback(err);
             }
-            couch = couchdb
+            couch = couchdb;
             return callback();
         });
     });
@@ -456,7 +513,7 @@ function pollCouch(couchdb, callback) {
     }
     // start polling
     _poll();
-};
+}
 
 var couchdb_base_opts = {
     db: COUCH_URL,

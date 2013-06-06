@@ -19,46 +19,46 @@ A `hoodie` instance, as used in below APIs.
 
 ## Databases
 
-### hoodie.databases.add(name, callback)
+### hoodie.database.add(name, callback)
 
 Creates a new database with the given name.
 
-### hoodie.databases.remove(name, callback)
+### hoodie.database.remove(name, callback)
 
 Deletes the named database.
 
-### hoodie.databases.info(name, callback)
+### hoodie.database.info(name, callback)
 
 Provides information on the given database.
 
-### hoodie.databases.list(callback)
+### hoodie.database.list(callback)
 
 Returns a list of all databases related to the app.
 
 
 ## Docs
 
-### hoodie.docs.all(db, callback)
+### hoodie.database( db ).docs.all(callback)
 
 Lists all documents in the database.
 
-### hoodie.docs.save(db, doc, callback)
+### hoodie.database( db ).docs.save(doc, callback)
 
 Saves `doc` to `db`. If the doc has no `_id` property then a new doc is
 created and the id is generated for you. Otherwise, it will either create
 a new doc with the given id, or it will update an existing document with
 that id.
 
-### hoodie.docs.get(db, id, callback)
+### hoodie.database( db ).docs.get(id, callback)
 
 Gets the doc with the given id from the databaese `db`
 
-### hoodie.docs.remove(db, doc, callback)
+### hoodie.database( db ).docs.remove(id, callback)
 
 Removes `doc` from `db`. The doc should have the latest `_rev` value set,
 or this will result in a document update conflict.
 
-### hoodie.doc.changes(db, options, [callback])
+### hoodie.database( db ).docs.changes(options, [callback])
 
 Subscribes to a changes feed for a database. If supplied, the callback will
 be passed a possible error, and a `feed` object with a `cancel` method. Calling

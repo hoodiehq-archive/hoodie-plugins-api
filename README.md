@@ -58,7 +58,7 @@ Gets the doc with the given id from the databaese `db`
 Removes `doc` from `db`. The doc should have the latest `_rev` value set,
 or this will result in a document update conflict.
 
-### hoodie.doc.changes(db, options, [callback])
+### hoodie.docs.changes(db, options, [callback])
 
 Subscribes to a changes feed for a database. If supplied, the callback will
 be passed a possible error, and a `feed` object with a `cancel` method. Calling

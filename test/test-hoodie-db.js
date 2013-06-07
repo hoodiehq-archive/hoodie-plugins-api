@@ -14,7 +14,8 @@ tests['HoodieDB - validate options'] = function (base_opts) {
     return function (test) {
         var options = {
             db: 'http://bar:baz@foo',
-            app_id: 'id1234'
+            app_id: 'id1234',
+            users_db: '_users'
         };
         // no errors on complete options object
         HoodieDB(options, function (err, hoodie) {
@@ -399,6 +400,52 @@ tests['docs.changes'] = function (base_opts) {
     };
 };
 
+tests['users.add, users.remove, users.get'] = function (base_opts) {
+    return function (test) {
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            async.series([
+                async.apply(hoodie.databases.add, 'foo'),
+                async.apply(hoodie.users.add, 'foobar', 'secret'),
+                async.apply(hoodie.users.get, 'foobar')
+            ],
+            function (err, results) {
+                console.log('cb');
+                if (err) {
+                    console.log(['err', err]);
+                    return test.done(err);
+                }
+                // should be user doc
+                var res2 = results[2];
+                if (Array.isArray(res2)) {
+                    res2 = res2[0];
+                }
+                var doc;
+                if (res2 instanceof Buffer) {
+                    doc = JSON.parse(res2.toString());
+                }
+                else {
+                    doc = res2;
+                }
+                console.log(['doc', doc]);
+                test.equal(doc.name, 'user/foobar');
+                hoodie.users.remove(doc, function (err) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    hoodie.users.get('foobar', function (err, doc) {
+                        // should return error, user has been removed
+                        test.ok(err);
+                        test.done();
+                    });
+                });
+            });
+        });
+    };
+};
+
 
 
 // make CouchDB tests
@@ -518,7 +565,7 @@ function pollCouch(couchdb, callback) {
 var couchdb_base_opts = {
     db: COUCH_URL,
     app_id: 'id1234',
-    admins: '_users',
+    users_db: '_users',
     queue: {
         publish: function (name, body, callback) {
             return callback();
@@ -541,7 +588,7 @@ Object.keys(tests).forEach(function (name) {
 var pouchdb_base_opts = {
     db: 'leveldb://' + __dirname + '/data/pouch',
     app_id: 'id1234',
-    admins: '_users',
+    users_db: '_users',
     queue: {
         publish: function (name, body, callback) {
             return callback();

@@ -7,7 +7,7 @@
         "request": "2.21.0",
         "underscore": "1.4.4",
         "async": "0.2.8",
-        "pouchdb": "git://github.com/daleharvey/pouchdb.git",
+        "pouchdb": "0.0.13",
         "couchr": "0.0.13",
         "mkdirp": "0.3.5",
         "uuid": "1.4.1"

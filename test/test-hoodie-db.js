@@ -406,6 +406,22 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
             if (err) {
                 return test.done(err);
             }
+            hoodie.users.add('foobar', 'secret', function (err, res) {
+                if (err) {
+                    return test.done(err);
+                }
+                hoodie.users.get('foobar', function (err, doc) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    // TODO: why doesn't doc._rev get set? Pouch reports
+                    // a conflict on the console but doesn't return it as an
+                    // error to the callback
+                    test.equal(doc._rev, res.rev);
+                    test.done();
+                });
+            });
+            /*
             async.series([
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.users.add, 'foobar', 'secret'),
@@ -442,6 +458,7 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
                     });
                 });
             });
+            */
         });
     };
 };

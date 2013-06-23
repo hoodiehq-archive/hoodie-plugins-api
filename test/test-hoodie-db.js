@@ -164,7 +164,7 @@ tests['docs.all'] = function (base_opts) {
                 return test.done(err);
             }
             var doc = {
-                _id: 'abc123',
+                _id: 'type/abc123',
                 title: 'bar'
             };
             async.series([
@@ -193,9 +193,9 @@ tests['docs.all'] = function (base_opts) {
                 test.same(res1.rows, []);
                 test.equal(res3.total_rows, 1);
                 test.equal(res3.rows.length, 1);
-                test.equal(res3.rows[0].id, 'abc123');
+                test.equal(res3.rows[0].id, 'type/abc123');
                 hoodie.docs.remove('foo', {
-                    _id: 'abc123',
+                    _id: 'type/abc123',
                     _rev: res2.rev
                 },
                 test.done);
@@ -212,7 +212,7 @@ tests['docs.save'] = function (base_opts) {
                 return test.done(err);
             }
             var doc = {
-                _id: 'abc123',
+                _id: 'type/abc123',
                 title: 'bar'
             };
             async.series([
@@ -241,9 +241,9 @@ tests['docs.save'] = function (base_opts) {
                 test.same(res1.rows, []);
                 test.equal(res3.total_rows, 1);
                 test.equal(res3.rows.length, 1);
-                test.equal(res3.rows[0].id, 'abc123');
+                test.equal(res3.rows[0].id, 'type/abc123');
                 hoodie.docs.remove('foo', {
-                    _id: 'abc123',
+                    _id: 'type/abc123',
                     _rev: res2.rev
                 },
                 test.done);
@@ -260,13 +260,13 @@ tests['docs.get'] = function (base_opts) {
                 return test.done(err);
             }
             var doc = {
-                _id: 'abc123',
+                _id: 'type/abc123',
                 title: 'bar'
             };
             async.series([
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.docs.save, 'foo', doc),
-                async.apply(hoodie.docs.get, 'foo', 'abc123')
+                async.apply(hoodie.docs.get, 'foo', 'type/abc123')
             ],
             function (err, results) {
                 if (err) {
@@ -283,7 +283,7 @@ tests['docs.get'] = function (base_opts) {
                 test.equal(doc2.title, doc.title);
                 test.ok(doc2._rev);
                 hoodie.docs.remove('foo', {
-                    _id: 'abc123',
+                    _id: 'type/abc123',
                     _rev: res1.rev
                 },
                 test.done);
@@ -299,7 +299,7 @@ tests['docs.remove'] = function (base_opts) {
                 return test.done(err);
             }
             var doc = {
-                _id: 'abc123',
+                _id: 'type/abc123',
                 title: 'bar'
             };
             async.series([
@@ -317,9 +317,9 @@ tests['docs.remove'] = function (base_opts) {
                 }
                 test.equal(res1.total_rows, 1);
                 test.equal(res1.rows.length, 1);
-                test.equal(res1.rows[0].id, 'abc123');
+                test.equal(res1.rows[0].id, 'type/abc123');
 
-                hoodie.docs.get('foo', 'abc123', function (err, doc) {
+                hoodie.docs.get('foo', 'type/abc123', function (err, doc) {
                     if (err) {
                         return callback(err);
                     }
@@ -406,31 +406,13 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
             if (err) {
                 return test.done(err);
             }
-            hoodie.users.add('foobar', 'secret', function (err, res) {
-                if (err) {
-                    return test.done(err);
-                }
-                hoodie.users.get('foobar', function (err, doc) {
-                    if (err) {
-                        return test.done(err);
-                    }
-                    // TODO: why doesn't doc._rev get set? Pouch reports
-                    // a conflict on the console but doesn't return it as an
-                    // error to the callback
-                    test.equal(doc._rev, res.rev);
-                    test.done();
-                });
-            });
-            /*
             async.series([
                 async.apply(hoodie.databases.add, 'foo'),
                 async.apply(hoodie.users.add, 'foobar', 'secret'),
                 async.apply(hoodie.users.get, 'foobar')
             ],
             function (err, results) {
-                console.log('cb');
                 if (err) {
-                    console.log(['err', err]);
                     return test.done(err);
                 }
                 // should be user doc
@@ -445,8 +427,8 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
                 else {
                     doc = res2;
                 }
-                console.log(['doc', doc]);
                 test.equal(doc.name, 'user/foobar');
+                test.equal(doc._id, 'org.couchdb.user:user/foobar');
                 hoodie.users.remove(doc, function (err) {
                     if (err) {
                         return test.done(err);
@@ -458,7 +440,6 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
                     });
                 });
             });
-            */
         });
     };
 };

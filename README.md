@@ -78,3 +78,18 @@ __Options__
 * __onChange__: Function called on each change after deduplication (only
   sends the most recent for each document), not called as a callback but
   called as onChange(change).
+
+
+## Users
+
+### hoodie.users.add(username, password, callback)
+
+Creates a new user with the given username and password.
+
+### hoodie.users.get(username, callback)
+
+Returns the user doc.
+
+### hoodie.users.remove(doc, callback)
+
+Removes the user doc.

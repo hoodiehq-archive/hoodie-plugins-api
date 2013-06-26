@@ -444,6 +444,76 @@ tests['users.add, users.remove, users.get'] = function (base_opts) {
     };
 };
 
+tests['users.info'] = function (base_opts) {
+    return function (test) {
+        test.expect(1);
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            hoodie.users.info(function (err, response) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.ok(response && response.hasOwnProperty('update_seq'));
+                test.done();
+            });
+        });
+    };
+};
+
+tests['users.changes'] = function (base_opts) {
+    return function (test) {
+        HoodieDB(base_opts, function (err, hoodie) {
+            if (err) {
+                return test.done(err);
+            }
+            hoodie.users.info(function (err, info) {
+                if (err) {
+                    test.done(err);
+                }
+                var changes = [];
+                var opts = {
+                    include_docs: true,
+                    continuous: true,
+                    since: info.update_seq,
+                    onChange: function (change) {
+                        changes.push(change);
+                    }
+                };
+                hoodie.users.changes(opts, function (err, feed) {
+                    // create
+                    hoodie.users.add('foo', 'secret', function (err, data) {
+                        if (err) {
+                            return test.done(err);
+                        }
+                        hoodie.users.get('foo', function (err, doc) {
+                            if (err) {
+                                return test.done(err);
+                            }
+                            // delete
+                            hoodie.users.remove(doc, function (err) {
+                                if (err) {
+                                    return test.done(err);
+                                }
+                                // give the changes feed time to reconnect
+                                setTimeout(function () {
+                                    test.equal(changes.length, 2);
+                                    test.equal(changes[0].doc.name, 'user/foo');
+                                    test.equal(changes[1].id, changes[0].id);
+                                    test.equal(changes[1].doc._deleted, true);
+                                    feed.cancel();
+                                    test.done();
+                                }, 100);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    };
+};
+
 
 
 // make CouchDB tests

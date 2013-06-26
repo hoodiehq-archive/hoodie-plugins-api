@@ -93,3 +93,11 @@ Returns the user doc.
 ### hoodie.users.remove(doc, callback)
 
 Removes the user doc.
+
+### hoodie.users.changes(options, [callback])
+
+Same as `hoodie.docs.changes` but operates on the users database.
+
+### hoodie.users.info(callback)
+
+Same as `hoodie.databases.info` but for the users database.

@@ -50,15 +50,14 @@ exports['request as admin'] = function (test) {
 
 exports['database: add / findAll / remove'] = function (test) {
     var hoodie = new PluginAPI(COUCH);
-    var database = hoodie.database;
     async.series([
-        async.apply(_.bind(database.add, database), 'foo'),
-        async.apply(_.bind(database.add, database), 'bar'),
-        _.bind(database.findAll, database),
-        async.apply(_.bind(database.remove, database), 'foo'),
-        _.bind(database.findAll, database),
-        async.apply(_.bind(database.remove, database), 'bar'),
-        _.bind(database.findAll, database),
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database.add, 'bar'),
+        hoodie.database.findAll,
+        async.apply(hoodie.database.remove, 'foo'),
+        hoodie.database.findAll,
+        async.apply(hoodie.database.remove, 'bar'),
+        hoodie.database.findAll,
     ],
     function (err, results) {
         var a = results[2][0],

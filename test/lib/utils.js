@@ -59,7 +59,7 @@ function startCouch(opts, callback) {
 
 function createAdmin(opts, callback) {
     request({
-        url: opts.url + '/_config/admins/' + opts.name,
+        url: opts.url + '/_config/admins/' + opts.user,
         method: 'PUT',
         body: JSON.stringify(opts.pass)
     }, callback);

@@ -34,3 +34,14 @@ exports['request'] = function (test) {
         test.done();
     });
 };
+
+exports['request as admin'] = function (test) {
+    var api = new PluginAPI(COUCH);
+    api.request('GET', '/_users/_all_docs', {}, function (err, data, res) {
+        if (err) {
+            return test.done(err);
+        }
+        test.equal(res.statusCode, 200);
+        test.done();
+    });
+};

@@ -4,18 +4,17 @@
     "description": "Hoodie interface to CouchDB",
     "main": "lib/index.js",
     "dependencies": {
-        "request": "2.21.0",
-        "underscore": "1.4.4",
-        "async": "0.2.8",
-        "pouchdb": "git://github.com/daleharvey/pouchdb.git",
         "couchr": "0.0.13",
-        "mkdirp": "0.3.5",
         "uuid": "1.4.1"
     },
     "devDependencies": {
+        "async": "0.2.8",
         "multicouch": "0.2.8",
         "nodeunit": "latest",
-        "rimraf": "2.1.4"
+        "rimraf": "2.1.4",
+        "mkdirp": "0.3.5",
+        "request": "2.21.0",
+        "underscore": "1.4.4"
     },
     "scripts": {
         "test": "node_modules/.bin/nodeunit test"

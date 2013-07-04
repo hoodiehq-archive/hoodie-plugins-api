@@ -91,6 +91,9 @@ db.query(index, options, callback)
 // list all users
 hoodie.user.list(callback)
 
+// add a user account (does not create user's database)
+hoodie.user.add(username, password, callback)
+
 // get a user object to make calls against
 hoodie.user(username) => user
 

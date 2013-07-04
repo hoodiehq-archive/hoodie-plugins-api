@@ -9,8 +9,7 @@ module.exports = function (hoodie, callback) {
 };
 
 
-// make HTTP requests directly to CouchDB (ideally, you would
-never need to use this)
+// make HTTP requests directly to CouchDB (ideally, you would never need to use this)
 hoodie.request(method, path, options, callback)
 
 // list all databases
@@ -46,16 +45,13 @@ db.remove(type, id, callback)
 // remove all documents of type in db
 db.removeAll(type, callback)
 
-// grant read access to everyone on db by updating CouchDB
-security
+// grant read access to everyone on db by updating CouchDB security
 db.grantReadAccess(callback)
 
-// grant read access to specific users on db by updating
-CouchDB security
+// grant read access to specific users on db by updating CouchDB security
 db.grantReadAccess(users, callback)
 
-// grant write access to specific users on db by adding role
-(checked by design doc in db)
+// grant write access to specific users on db by adding role (checked by design doc in db)
 db.grantWriteAccess(users, callback)
 
 // update db security so it's no longer publicly readable
@@ -64,8 +60,7 @@ db.revokeReadAccess(callback)
 // remove users from couchdb readers for db
 db.revokeReadAccess(users, callback)
 
-// remove role from users so they cannot write to db (checked
-by design doc)
+// remove role from users so they cannot write to db (checked by design doc)
 db.revokeWriteAccess(users, callback)
 
 // creates new design doc with CouchDB view on db

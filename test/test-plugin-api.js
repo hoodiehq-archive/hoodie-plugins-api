@@ -3,11 +3,9 @@ var PluginAPI = require('../lib/index').PluginAPI,
 
 
 var COUCH = {
-    port: 8985,
     user: 'admin',
     pass: 'password',
-    base_url: 'http://localhost:8985',
-    auth_url: 'http://admin:password@localhost:8985',
+    url: 'http://localhost:8985',
     data_dir: __dirname + '/data',
 };
 
@@ -20,22 +18,19 @@ exports.setUp = function (callback) {
 };
 
 exports.tearDown = function (callback) {
-    console.log('Stopping CouchDB');
     this.couch.once('stop', function () {
         callback();
     });
     this.couch.stop();
 };
 
-
-exports['my example test'] = function (test) {
-    console.log('test ran');
-    test.ok(true);
-    test.done();
-};
-
-exports['my example test2'] = function (test) {
-    console.log('test ran');
-    test.ok(true);
-    test.done();
+exports['request'] = function (test) {
+    var api = new PluginAPI(COUCH);
+    api.request('GET', '/', {}, function (err, data, res) {
+        if (err) {
+            return test.done(err);
+        }
+        test.equal(data.couchdb, 'Welcome');
+        test.done();
+    });
 };

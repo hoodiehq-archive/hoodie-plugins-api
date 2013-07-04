@@ -1,5 +1,21 @@
 # Hoodie Plugin API
 
+## Directory structure
+
+```
+/hoodie-plugin-example
+    /admin
+    /api
+    /worker
+```
+
+* __admin__ - Extends the Pocket admin interface
+* __api__ - Extends the hoodie.js front-end API
+* __worker__ - Node.js worker for handling tasks and other events
+
+
+## Writing workers
+
 ```javascript
 // Initializing a worker
 module.exports = function (hoodie, callback) {

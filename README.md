@@ -1,103 +1,96 @@
-# API
+# Hoodie Plugin API
+
+```javascript
+// Initializing a worker
+module.exports = function (hoodie, callback) {
+    // hoodie object is client to hoodie backend, documented below.
+    // call callback when setup complete (with optional error if worker failed to initialize).
+    // ...
+};
 
 
-## HoodieDB(options, callback)
+// make HTTP requests directly to CouchDB (ideally, you would
+never need to use this)
+hoodie.request(method, path, options, callback)
 
-Creates a new db client instance to talk to the backend database. In the
-case of Hoodie modules, you won't need to call this as you will be passed
-an instance already set up for the application.
+// list all databases
+hoodie.database.findAll(callback)
 
-__Options__
+// create a new database
+hoodie.database.add(name, callback)
 
-* __db__ - Database location / CouchDB URL
-* __app\_id__ - unique identification for the app
+// remove a database
+hoodie.database.remove(name, callback)
 
-__Returns__
+// get a database object to make calls against
+hoodie.database(name) => db
 
-A `hoodie` instance, as used in below APIs.
+// add a document to db
+db.add(type, attrs, callback)
 
+// update a document in db
+db.update(type, id, changed_attrs, callback)
 
-## Databases
+// get a document from db
+db.find(type, id, callback)
 
-### hoodie.databases.add(name, callback)
+// get all documents from db
+db.findAll(callback)
 
-Creates a new database with the given name.
+// get all documents of a single type in db
+db.findAll(type, callback)
 
-### hoodie.databases.remove(name, callback)
+// remove a document from db
+db.remove(type, id, callback)
 
-Deletes the named database.
+// remove all documents of type in db
+db.removeAll(type, callback)
 
-### hoodie.databases.info(name, callback)
+// grant read access to everyone on db by updating CouchDB
+security
+db.grantReadAccess(callback)
 
-Provides information on the given database.
+// grant read access to specific users on db by updating
+CouchDB security
+db.grantReadAccess(users, callback)
 
-### hoodie.databases.list(callback)
+// grant write access to specific users on db by adding role
+(checked by design doc in db)
+db.grantWriteAccess(users, callback)
 
-Returns a list of all databases related to the app.
+// update db security so it's no longer publicly readable
+db.revokeReadAccess(callback)
 
+// remove users from couchdb readers for db
+db.revokeReadAccess(users, callback)
 
-## Docs
+// remove role from users so they cannot write to db (checked
+by design doc)
+db.revokeWriteAccess(users, callback)
 
-### hoodie.docs.all(db, callback)
+// creates new design doc with CouchDB view on db
+db.addIndex(name, {map: .., reduce: ..}, callback)
 
-Lists all documents in the database.
+// removes design doc for couchdb view on db
+db.removeIndex(name, callback)
 
-### hoodie.docs.save(db, doc, callback)
+// query a couchdb view on db
+db.query(index, options, callback)
 
-Saves `doc` to `db`. If the doc has no `_id` property then a new doc is
-created and the id is generated for you. Otherwise, it will either create
-a new doc with the given id, or it will update an existing document with
-that id.
+// list all users
+hoodie.user.list(callback)
 
-### hoodie.docs.get(db, id, callback)
+// get a user object to make calls against
+hoodie.user(username) => user
 
-Gets the doc with the given id from the databaese `db`
+// delete couchdb user
+user.remove(callback)
 
-### hoodie.docs.remove(db, doc, callback)
+// get user doc
+user.get(callback)
 
-Removes `doc` from `db`. The doc should have the latest `_rev` value set,
-or this will result in a document update conflict.
-
-### hoodie.docs.changes(db, options, [callback])
-
-Subscribes to a changes feed for a database. If supplied, the callback will
-be passed a possible error, and a `feed` object with a `cancel` method. Calling
-`feed.cancel()`, will stop listening for new changes.
-
-__Options__
-
-* __include\_docs__: Include the associated document with each change
-* __conflicts__: Include conflicts
-* __descending__: Reverse the order of the output table
-* __filter__: Reference a filter function from a design document to selectively
-  get updates
-* __since__: Start the results from the change immediately after the given
-  sequence number
-* __complete__: Function called when all changes have been processed
-* __continuous__: Use longpoll feed
-* __onChange__: Function called on each change after deduplication (only
-  sends the most recent for each document), not called as a callback but
-  called as onChange(change).
-
-
-## Users
-
-### hoodie.users.add(username, password, callback)
-
-Creates a new user with the given username and password.
-
-### hoodie.users.get(username, callback)
-
-Returns the user doc.
-
-### hoodie.users.remove(doc, callback)
-
-Removes the user doc.
-
-### hoodie.users.changes(options, [callback])
-
-Same as `hoodie.docs.changes` but operates on the users database.
-
-### hoodie.users.info(callback)
-
-Same as `hoodie.databases.info` but for the users database.
+// listen to task document events
+hoodie.task('email').on('add', function (db, doc) { ... })
+hoodie.task('email').on('update', function (db, doc) { ... })
+hoodie.task('email').on('remove', function (db, doc) { ... })
+```

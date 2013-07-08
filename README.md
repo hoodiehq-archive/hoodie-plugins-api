@@ -28,6 +28,10 @@ module.exports = function (hoodie, callback) {
 // make HTTP requests directly to CouchDB (ideally, you would never need to use this)
 hoodie.request(method, path, options, callback)
 
+// get / set plugin configuration
+hoodie.config.get(key)
+hoodie.config.set(key, value)
+
 // list all databases
 hoodie.database.findAll(callback)
 

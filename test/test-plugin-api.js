@@ -198,3 +198,27 @@ exports['db.add / db.findAll of type'] = function (test) {
         });
     });
 };
+
+exports['db.add / db.findAll / db.remove / db.findAll'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        async.series([
+            async.apply(db.add, 'mytype', {id: 'wibble', title: 'Test'}),
+            db.findAll,
+            async.apply(db.remove, 'mytype', 'wibble'),
+            db.findAll
+        ],
+        function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            test.equal(results[1].length, 1);
+            test.equal(results[1][0].id, 'wibble');
+            test.equal(results[3].length, 0);
+            test.done();
+        });
+    });
+};

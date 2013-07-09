@@ -5,16 +5,16 @@
     "main": "lib/index.js",
     "dependencies": {
         "couchr": "0.0.13",
-        "uuid": "1.4.1"
+        "uuid": "1.4.1",
+        "async": "0.2.8",
+        "underscore": "1.4.4"
     },
     "devDependencies": {
-        "async": "0.2.8",
         "multicouch": "0.2.8",
         "nodeunit": "latest",
         "rimraf": "2.1.4",
         "mkdirp": "0.3.5",
-        "request": "2.21.0",
-        "underscore": "1.4.4"
+        "request": "2.21.0"
     },
     "scripts": {
         "test": "node_modules/.bin/nodeunit test"

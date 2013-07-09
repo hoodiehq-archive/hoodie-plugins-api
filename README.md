@@ -98,6 +98,12 @@ hoodie.user.findAll(callback)
 // add a user account (does not create user's database)
 hoodie.user.add(username, password, callback)
 
+// subscribe to user database change events
+hoodie.user.on('add', handler)
+hoodie.user.on('remove', handler)
+hoodie.user.on('update', handler)
+hoodie.user.on('change', handler)
+
 // get a user object to make calls against
 hoodie.user(username) => user
 

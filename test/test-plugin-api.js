@@ -83,7 +83,7 @@ exports['database: get by name'] = function (test) {
     });
 };
 
-exports['db.add / db.get / db.update / db. get'] = function (test) {
+exports['db.add / db.get / db.update / db.get'] = function (test) {
     var hoodie = new PluginAPI(COUCH);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
@@ -131,5 +131,38 @@ exports['db.add / db.get / db.update / db. get'] = function (test) {
             }
         ],
         test.done);
+    });
+};
+
+exports['db.add / db.findAll'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var doc1 = {id: 'wibble', title: 'Test Document 1'};
+        var doc2 = {id: 'wobble', title: 'Test Document 2'};
+        async.parallel([
+            async.apply(db.add, 'mytype', doc1),
+            async.apply(db.add, 'mytype', doc2),
+        ],
+        function (err) {
+            if (err) {
+                return test.done(err);
+            }
+            db.findAll(function (err, docs) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.equal(docs.length, 2);
+                test.equal(docs[0].id, 'wibble');
+                test.equal(docs[0].type, 'mytype');
+                test.equal(docs[0].title, 'Test Document 1');
+                test.equal(docs[1].id, 'wobble');
+                test.equal(docs[1].type, 'mytype');
+                test.equal(docs[1].title, 'Test Document 2');
+                test.done();
+            });
+        });
     });
 };

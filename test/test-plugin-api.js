@@ -378,12 +378,14 @@ exports['automatically update app config from couch'] = function (test) {
     });
 };
 
-exports['user.add / user.list'] = function (test) {
+exports['user.add / user.list / user.remove'] = function (test) {
     var hoodie = this.hoodie;
     async.series([
         hoodie.user.findAll,
         async.apply(hoodie.user.add, 'testuser', 'testing'),
         hoodie.user.findAll,
+        async.apply(hoodie.user.remove, 'testuser'),
+        hoodie.user.findAll
     ],
     function (err, results) {
         if (err) {
@@ -391,9 +393,11 @@ exports['user.add / user.list'] = function (test) {
         }
         var docs1 = results[0];
         var docs2 = results[2];
+        var docs3 = results[4];
         test.equal(docs1.length, 0);
         test.equal(docs2.length, 1);
         test.equal(docs2[0].name, 'testuser');
+        test.equal(docs3.length, 0);
         test.done();
     });
 };

@@ -93,7 +93,7 @@ db.removeIndex(name, callback)
 db.query(index, options, callback)
 
 // list all users
-hoodie.user.list(callback)
+hoodie.user.findAll(callback)
 
 // add a user account (does not create user's database)
 hoodie.user.add(username, password, callback)
@@ -106,6 +106,7 @@ user.remove(callback)
 
 // get user doc
 user.get(callback)
+
 
 // listen to task document events
 hoodie.task('email').on('add', function (db, doc) { ... })

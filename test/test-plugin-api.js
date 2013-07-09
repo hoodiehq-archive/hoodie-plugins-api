@@ -70,3 +70,34 @@ exports['database: add / findAll / remove'] = function (test) {
         test.done();
     });
 };
+
+exports['db.add / db.get'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            console.log('err1');
+            return test.done(err);
+        }
+        var doc = {
+            id: 'asdf',
+            title: 'Test Document'
+        };
+        db.add('mytype', doc, function (err, resp) {
+            if (err) {
+                console.log('err2');
+                return test.done(err);
+            }
+            test.ok(resp.ok);
+            db.find('mytype', 'asdf', function (err, doc2) {
+                if (err) {
+                    console.log('err3');
+                    return test.done(err);
+                }
+                test.equal(doc2.id, 'asdf');
+                test.equal(doc2.type, 'mytype');
+                test.equal(doc2.title, 'Test Document');
+                test.done();
+            });
+        });
+    });
+};

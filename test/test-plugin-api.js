@@ -71,6 +71,18 @@ exports['database: add / findAll / remove'] = function (test) {
     });
 };
 
+exports['database: get by name'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('wibble', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var db2 = hoodie.database('wibble');
+        test.equal(db._resolve('wobble'), db2._resolve('wobble'));
+        test.done();
+    });
+};
+
 exports['db.add / db.get / db.update / db. get'] = function (test) {
     var hoodie = new PluginAPI(COUCH);
     hoodie.database.add('foo', function (err, db) {

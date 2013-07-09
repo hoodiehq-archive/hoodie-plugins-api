@@ -222,3 +222,32 @@ exports['db.add / db.findAll / db.remove / db.findAll'] = function (test) {
         });
     });
 };
+
+exports['db.add / db.findAll / db.removeAll / db.findAll'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        async.series([
+            async.apply(db.add, 'type1', {id: 'wibble'}),
+            async.apply(db.add, 'type1', {id: 'wobble'}),
+            async.apply(db.add, 'type2', {id: 'wubble'}),
+            db.findAll,
+            async.apply(db.removeAll, 'type1'),
+            db.findAll
+        ],
+        function (err, results) {
+            if (err) {
+                return test.done(err);
+            }
+            test.equal(results[3].length, 3);
+            test.equal(results[3][0].id, 'wibble');
+            test.equal(results[3][1].id, 'wobble');
+            test.equal(results[3][2].id, 'wubble');
+            test.equal(results[5].length, 1);
+            test.equal(results[5][0].id, 'wubble');
+            test.done();
+        });
+    });
+};

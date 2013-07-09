@@ -144,7 +144,7 @@ exports['db.add / db.findAll'] = function (test) {
         var doc2 = {id: 'wobble', title: 'Test Document 2'};
         async.parallel([
             async.apply(db.add, 'mytype', doc1),
-            async.apply(db.add, 'mytype', doc2),
+            async.apply(db.add, 'mytype', doc2)
         ],
         function (err) {
             if (err) {
@@ -161,6 +161,38 @@ exports['db.add / db.findAll'] = function (test) {
                 test.equal(docs[1].id, 'wobble');
                 test.equal(docs[1].type, 'mytype');
                 test.equal(docs[1].title, 'Test Document 2');
+                test.done();
+            });
+        });
+    });
+};
+
+exports['db.add / db.findAll of type'] = function (test) {
+    var hoodie = new PluginAPI(COUCH);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var doc1 = {id: 'wibble', title: 'Test Document 1'};
+        var doc2 = {id: 'wobble', title: 'Test Document 2'};
+        var doc3 = {id: 'wubble', title: 'Test Document 3'};
+        async.parallel([
+            async.apply(db.add, 'mytype', doc1),
+            async.apply(db.add, 'mytype', doc2),
+            async.apply(db.add, 'othertype', doc3)
+        ],
+        function (err) {
+            if (err) {
+                return test.done(err);
+            }
+            db.findAll('othertype', function (err, docs) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.equal(docs.length, 1);
+                test.equal(docs[0].id, 'wubble');
+                test.equal(docs[0].type, 'othertype');
+                test.equal(docs[0].title, 'Test Document 3');
                 test.done();
             });
         });

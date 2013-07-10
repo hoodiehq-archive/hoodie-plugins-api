@@ -113,6 +113,9 @@ user.remove(callback)
 // get user doc
 user.get(callback)
 
+// update some properties on user document
+user.update(changed_attrs, callback)
+
 
 // listen to task document events
 hoodie.task('email').on('add', function (db, doc) { ... })

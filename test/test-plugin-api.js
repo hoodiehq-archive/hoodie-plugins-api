@@ -353,3 +353,31 @@ exports['user.add / user.findAll / user.get / user.remove'] = function (test) {
         test.done();
     });
 };
+
+exports['pass through user events from plugin manager'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var user_events = [];
+    hoodie.user.on('add', function (doc) {
+        user_events.push('add ' + doc.name);
+    });
+    hoodie.user.on('update', function (doc) {
+        user_events.push('update ' + doc.name);
+    });
+    hoodie.user.on('remove', function (doc) {
+        user_events.push('remove ' + doc.name);
+    });
+    hoodie.user.on('change', function (doc) {
+        user_events.push('change ' + doc.name);
+    });
+    hoodie.user.emit('add', {name: 'testuser'});
+    hoodie.user.emit('update', {name: 'testuser'});
+    hoodie.user.emit('remove', {name: 'testuser'});
+    hoodie.user.emit('change', {name: 'testuser'});
+    test.same(user_events, [
+        'add testuser',
+        'update testuser',
+        'remove testuser',
+        'change testuser'
+    ]);
+    test.done();
+};

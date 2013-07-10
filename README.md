@@ -121,4 +121,5 @@ user.update(changed_attrs, callback)
 hoodie.task('email').on('add', function (db, doc) { ... })
 hoodie.task('email').on('update', function (db, doc) { ... })
 hoodie.task('email').on('remove', function (db, doc) { ... })
+hoodie.task('email').on('change', function (db, doc) { ... })
 ```

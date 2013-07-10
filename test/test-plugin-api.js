@@ -1,4 +1,4 @@
-var createAPI = require('../lib/index').createAPI,
+var PluginAPI = require('../lib/index').PluginAPI,
     couchr = require('couchr'),
     utils = require('./lib/utils'),
     async = require('async'),
@@ -11,6 +11,15 @@ var COUCH = {
     pass: 'password',
     url: 'http://localhost:8985',
     data_dir: __dirname + '/data',
+};
+
+var DEFAULT_OPTIONS = {
+    name: 'myplugin',
+    couchdb: COUCH,
+    config: {
+        app: {foo: 'bar'},
+        plugin: {}
+    }
 };
 
 exports.setUp = function (callback) {
@@ -30,34 +39,19 @@ exports.setUp = function (callback) {
             async.apply(couchr.put, url.resolve(base, 'app')),
             async.apply(couchr.put, url.resolve(base, 'app/config'), appconfig)
         ],
-        function (err) {
-            if (err) {
-                return callback(err);
-            }
-            var options = {
-                name: 'myplugin',
-                couchdb: COUCH
-            };
-            createAPI(options, function (err, hoodie) {
-                that.hoodie = hoodie;
-                return callback(err);
-            });
-        });
+        callback);
     });
 };
 
 exports.tearDown = function (callback) {
-    var that = this;
-    this.hoodie._stop(function () {
-        that.couch.once('stop', function () {
-            callback();
-        });
-        that.couch.stop();
+    this.couch.once('stop', function () {
+        callback();
     });
+    this.couch.stop();
 };
 
 exports['request'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.request('GET', '/', {}, function (err, data, res) {
         if (err) {
             return test.done(err);
@@ -68,7 +62,7 @@ exports['request'] = function (test) {
 };
 
 exports['request as admin'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.request('GET', '/_users/_all_docs', {}, function (err, data, res) {
         if (err) {
             return test.done(err);
@@ -79,7 +73,7 @@ exports['request as admin'] = function (test) {
 };
 
 exports['database: add / findAll / remove'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     async.series([
         async.apply(hoodie.database.add, 'foo'),
         async.apply(hoodie.database.add, 'bar'),
@@ -102,7 +96,7 @@ exports['database: add / findAll / remove'] = function (test) {
 };
 
 exports['database: get by name'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('wibble', function (err, db) {
         if (err) {
             return test.done(err);
@@ -114,7 +108,7 @@ exports['database: get by name'] = function (test) {
 };
 
 exports['db.add / db.get / db.update / db.get'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
             return test.done(err);
@@ -165,7 +159,7 @@ exports['db.add / db.get / db.update / db.get'] = function (test) {
 };
 
 exports['db.add / db.findAll'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
             return test.done(err);
@@ -198,7 +192,7 @@ exports['db.add / db.findAll'] = function (test) {
 };
 
 exports['db.add / db.findAll of type'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
             return test.done(err);
@@ -230,7 +224,7 @@ exports['db.add / db.findAll of type'] = function (test) {
 };
 
 exports['db.add / db.findAll / db.remove / db.findAll'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
             return test.done(err);
@@ -254,7 +248,7 @@ exports['db.add / db.findAll / db.remove / db.findAll'] = function (test) {
 };
 
 exports['db.add / db.findAll / db.removeAll / db.findAll'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {
         if (err) {
             return test.done(err);
@@ -283,103 +277,58 @@ exports['db.add / db.findAll / db.removeAll / db.findAll'] = function (test) {
 };
 
 exports['config.set / config.get'] = function (test) {
-    var hoodie = this.hoodie;
-    createAPI({name: 'otherplugin', couchdb: COUCH}, function (err, hoodie2) {
-        if (err) {
-            return test.done(err);
-        }
-
-        var _done = test.done;
-        test.done = function () {
-            var args = arguments;
-            hoodie2._stop(function () {
-                return _done.apply(null, args);
-            });
-        };
-
-        // try getting a property that does not exist
-        test.strictEqual(hoodie.config.get('asdf'), undefined);
-
-        // set then immediately read a property
-        hoodie.config.set('asdf', 123);
-        test.equal(hoodie.config.get('asdf'), 123);
-
-        // read global config
-        test.equal(hoodie.config.get('foo'), 'bar');
-
-        // override global config value for single plugin only
-        hoodie.config.set('foo', 'baz');
-        test.equal(hoodie.config.get('foo'), 'baz');
-        test.equal(hoodie2.config.get('foo'), 'bar');
-
-        // make sure the config is persistent
-        setTimeout(function () {
-            var myplugin_url = hoodie._resolve('plugins/plugin%2Fmyplugin');
-            var otherplugin_url = hoodie._resolve('plugins/plugin%2Fotherplugin');
-
-            couchr.get(myplugin_url, function (err, doc) {
-                if (err) {
-                    return test.done(err);
-                }
-                test.equal(doc.config.foo, 'baz');
-                couchr.get(otherplugin_url, function (err, doc2) {
-                    if (err) {
-                        return test.done(err);
-                    }
-                    test.strictEqual(doc2.config.foo, undefined);
-                    test.done();
-                });
-            });
-        }, 1000);
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var hoodie2 = new PluginAPI({
+        name: 'otherplugin',
+        couchdb: COUCH,
+        config: DEFAULT_OPTIONS.config
     });
-};
 
-exports['automatically update plugin config from couch'] = function (test) {
-    var hoodie = this.hoodie;
+    // try getting a property that does not exist
     test.strictEqual(hoodie.config.get('asdf'), undefined);
-    var url = hoodie._resolve('plugins/plugin%2Fmyplugin');
-    couchr.get(url, function (err, doc) {
-        if (err) {
-            return test.done(err);
-        }
-        doc.config.asdf = 12345;
-        couchr.put(url, doc, function (err) {
+
+    // set then immediately read a property
+    hoodie.config.set('asdf', 123);
+    test.equal(hoodie.config.get('asdf'), 123);
+
+    // read global config
+    test.equal(hoodie.config.get('foo'), 'bar');
+
+    // override global config value for single plugin only
+    hoodie.config.set('foo', 'baz');
+    test.equal(hoodie.config.get('foo'), 'baz');
+    test.equal(hoodie2.config.get('foo'), 'bar');
+
+    // make sure the config is persistent
+    setTimeout(function () {
+        var myplugin_url = hoodie._resolve('plugins/plugin%2Fmyplugin');
+        var otherplugin_url = hoodie._resolve('plugins/plugin%2Fotherplugin');
+
+        couchr.get(myplugin_url, function (err, doc) {
             if (err) {
                 return test.done(err);
             }
-            // test that couchdb change event causes config to update
-            setTimeout(function () {
-                test.equal(hoodie.config.get('asdf'), 12345);
+            test.equal(doc.config.foo, 'baz');
+            couchr.get(otherplugin_url, function (err, doc2) {
+                test.same(err.error, 'not_found');
                 test.done();
-            }, 1000);
+            });
         });
-    });
+    }, 1000);
 };
 
-exports['automatically update app config from couch'] = function (test) {
-    var hoodie = this.hoodie;
+exports['update config from couch'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     test.strictEqual(hoodie.config.get('asdf'), undefined);
-    var url = hoodie._resolve('app/config');
-    couchr.get(url, function (err, doc) {
-        if (err) {
-            return test.done(err);
-        }
-        doc.config.asdf = 12345;
-        couchr.put(url, doc, function (err) {
-            if (err) {
-                return test.done(err);
-            }
-            // test that couchdb change event causes config to update
-            setTimeout(function () {
-                test.equal(hoodie.config.get('asdf'), 12345);
-                test.done();
-            }, 1000);
-        });
-    });
+    hoodie.config._updateAppConfig({asdf: 1234});
+    test.equal(hoodie.config.get('asdf'), 1234);
+    hoodie.config._updatePluginConfig({asdf: 5678});
+    test.equal(hoodie.config.get('asdf'), 5678);
+    test.done();
 };
 
 exports['user.add / user.findAll / user.get / user.remove'] = function (test) {
-    var hoodie = this.hoodie;
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     async.series([
         hoodie.user.findAll,
         async.apply(hoodie.user.add, 'testuser', 'testing'),

@@ -381,3 +381,33 @@ exports['pass through user events from plugin manager'] = function (test) {
     ]);
     test.done();
 };
+
+exports['pass through task events'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var evs = [];
+    hoodie.task('mytask').on('add', function (doc) {
+        evs.push('add ' + doc.name);
+    });
+    hoodie.task('mytask').on('update', function (doc) {
+        evs.push('update ' + doc.name);
+    });
+    hoodie.task('mytask').on('remove', function (doc) {
+        evs.push('remove ' + doc.name);
+    });
+    hoodie.task('mytask').on('change', function (doc) {
+        evs.push('change ' + doc.name);
+    });
+    hoodie.task('mytask').emit('add', {name: 'test'});
+    hoodie.task('mytask').emit('update', {name: 'test'});
+    hoodie.task('mytask').emit('remove', {name: 'test'});
+    hoodie.task('mytask').emit('change', {name: 'test'});
+    hoodie.task('othertask').emit('add', {name: 'test2'});
+    test.same(evs, [
+        'add test',
+        'update test',
+        'remove test',
+        'change test'
+        // othertask doesn't get added
+    ]);
+    test.done();
+};

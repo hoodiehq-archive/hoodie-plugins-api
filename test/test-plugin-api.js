@@ -411,3 +411,16 @@ exports['pass through task events'] = function (test) {
     ]);
     test.done();
 };
+
+exports['new databases are only accessible to _admin users'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        couchr.get(COUCH.url + '/foo/_all_docs', function (err, body, res) {
+            test.equal(res.statusCode, 401);
+            test.done();
+        });
+    });
+};

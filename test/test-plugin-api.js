@@ -429,7 +429,6 @@ exports['new databases are only accessible to _admin users'] = function (test) {
     });
 };
 
-/*
 exports['db.grantWriteAccess'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
@@ -454,7 +453,8 @@ exports['db.grantWriteAccess'] = function (test) {
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(db.grantWriteAccess, 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
-            async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}})
+            async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
+            async.apply(hoodie.request, 'GET', '/_users/org.couchdb.user%3Atestuser', {})
         ];
         async.series(tasks.map(ignoreErrs), function (err, results) {
             test.equal(results[1][1].statusCode, 401);
@@ -464,4 +464,3 @@ exports['db.grantWriteAccess'] = function (test) {
         });
     });
 };
-*/

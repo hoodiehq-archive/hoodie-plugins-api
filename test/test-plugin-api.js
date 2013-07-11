@@ -327,12 +327,14 @@ exports['update config from couch'] = function (test) {
     test.done();
 };
 
-exports['user.add / user.findAll / user.get / user.remove'] = function (test) {
+exports['user.add / findAll / get / remove / update'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     async.series([
         hoodie.user.findAll,
         async.apply(hoodie.user.add, 'testuser', 'testing'),
         hoodie.user.findAll,
+        hoodie.user('testuser').get,
+        async.apply(hoodie.user('testuser').update, {wibble: 'wobble'}),
         hoodie.user('testuser').get,
         hoodie.user('testuser').remove,
         hoodie.user.findAll
@@ -343,12 +345,14 @@ exports['user.add / user.findAll / user.get / user.remove'] = function (test) {
         }
         var docs1 = results[0];
         var docs2 = results[2];
-        var userdoc = results[3][0];
-        var docs3 = results[5];
+        var userdoc1 = results[3][0];
+        var userdoc2 = results[5][0];
+        var docs3 = results[7];
         test.equal(docs1.length, 0);
         test.equal(docs2.length, 1);
         test.equal(docs2[0].name, 'testuser');
-        test.equal(userdoc.name, 'testuser');
+        test.equal(userdoc1.name, 'testuser');
+        test.equal(userdoc2.wibble, 'wobble');
         test.equal(docs3.length, 0);
         test.done();
     });
@@ -424,3 +428,40 @@ exports['new databases are only accessible to _admin users'] = function (test) {
         });
     });
 };
+
+/*
+exports['db.grantWriteAccess'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+
+    var db_url = url.parse(COUCH.url + '/foo');
+    db_url.auth = 'testuser:testing';
+    db_url = url.format(db_url);
+
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var ignoreErrs = function (fn) {
+            return function (callback) {
+                fn(function () {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return callback.apply(this, [null].concat(args));
+                });
+            }
+        };
+        var tasks = [
+            async.apply(hoodie.user.add, 'testuser', 'testing'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(db.grantWriteAccess, 'testuser'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}})
+        ];
+        async.series(tasks.map(ignoreErrs), function (err, results) {
+            test.equal(results[1][1].statusCode, 401);
+            test.equal(results[3][1].statusCode, 200);
+            test.equal(results[4][1].statusCode, 201);
+            test.done();
+        });
+    });
+};
+*/

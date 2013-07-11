@@ -128,6 +128,7 @@ hoodie.account.on('add:$passwordReset', function(object) {
   // set new password in user doc & send it via email
 })
 
+
 //
 // listen to task document events
 //
@@ -135,4 +136,8 @@ hoodie.task.on('add:type', function (db, doc) { ... })
 hoodie.task.on('update:type', function (db, doc) { ... })
 hoodie.task.on('remove:type', function (db, doc) { ... })
 hoodie.task.on('change:type', function (db, doc) { ... })
+
+// add / remove sources (database) to listen for new tasks
+hoodie.task.addSource( databaseName )
+hoodie.task.removeSource( databaseName )
 ```

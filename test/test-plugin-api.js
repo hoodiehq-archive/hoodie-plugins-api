@@ -555,7 +555,7 @@ exports['db.revokeReadAccess for a user with write access'] = function (test) {
     });
 };
 
-exports['db.grantReadAccess public / revokeReadAccess public'] = function (test) {
+exports['db.grantPublicReadAccess / revokePublicReadAccess'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
     var db_url = COUCH.url + '/foo';
@@ -609,11 +609,76 @@ exports['db.grantReadAccess public / revokeReadAccess public'] = function (test)
             test.equal(results[8][1].statusCode, 200); // anonyous read
             test.equal(results[9][1].statusCode, 401); // anonymous write
             // after revoke - testuser1 retains original permisisons
-            test.equal(results[11][1].statusCode,  200); // testuser1 read
+            test.equal(results[11][1].statusCode, 200); // testuser1 read
             test.equal(results[12][1].statusCode, 201); // testuser1 write
             test.equal(results[13][1].statusCode, 401); // testuser2 read
             test.equal(results[14][1].statusCode, 401); // testuesr2 write
             test.equal(results[15][1].statusCode, 401); // anonymous read
+            test.equal(results[16][1].statusCode, 401); // anonymous write
+            test.done();
+        });
+    });
+};
+
+exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+
+    var db_url = COUCH.url + '/foo';
+
+    var db_url_testuser1 = url.parse(db_url);
+    db_url_testuser1.auth = 'testuser1:testing';
+    db_url_testuser1 = url.format(db_url_testuser1);
+
+    var db_url_testuser2 = url.parse(db_url);
+    db_url_testuser2.auth = 'testuser2:testing';
+    db_url_testuser2 = url.format(db_url_testuser2);
+
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var ignoreErrs = function (fn) {
+            return function (callback) {
+                fn(function () {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return callback.apply(this, [null].concat(args));
+                });
+            }
+        };
+        var opt = {data: {asdf: 123}};
+        var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var tasks = [
+            async.apply(hoodie.user.add, 'testuser1', 'testing'),
+            async.apply(hoodie.user.add, 'testuser2', 'testing'),
+            async.apply(db.grantWriteAccess, 'testuser1'),
+            db.grantPublicWriteAccess,
+            async.apply(couchr.get, db_url_testuser1 + '/_all_docs'),
+            async.apply(couchr.put, db_url_testuser1 + '/some_doc1', opt),
+            async.apply(couchr.get, db_url_testuser2 + '/_all_docs'),
+            async.apply(couchr.put, db_url_testuser2 + '/some_doc2', opt),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc3', opt),
+            db.revokePublicWriteAccess,
+            async.apply(couchr.get, db_url_testuser1 + '/_all_docs'),
+            async.apply(couchr.put, db_url_testuser1 + '/some_doc4', opt),
+            async.apply(couchr.get, db_url_testuser2 + '/_all_docs'),
+            async.apply(couchr.put, db_url_testuser2 + '/some_doc5', opt),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc6', opt)
+        ];
+        async.series(tasks.map(ignoreErrs), function (err, results) {
+            test.equal(results[4][1].statusCode, 200); // testuser1 read
+            test.equal(results[5][1].statusCode, 201); // testuser1 write
+            test.equal(results[6][1].statusCode, 200); // testuser2 read
+            test.equal(results[7][1].statusCode, 201); // testuser2 write
+            test.equal(results[8][1].statusCode, 200); // anonyous read
+            test.equal(results[9][1].statusCode, 201); // anonymous write
+            // after revoke - testuser1 retains original permisisons
+            test.equal(results[11][1].statusCode, 200); // testuser1 read
+            test.equal(results[12][1].statusCode, 201); // testuser1 write
+            test.equal(results[13][1].statusCode, 200); // testuser2 read
+            test.equal(results[14][1].statusCode, 401); // testuesr2 write
+            test.equal(results[15][1].statusCode, 200); // anonymous read
             test.equal(results[16][1].statusCode, 401); // anonymous write
             test.done();
         });

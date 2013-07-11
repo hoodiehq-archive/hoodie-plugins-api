@@ -66,7 +66,10 @@ db.remove(type, id, callback)
 db.removeAll(type, callback)
 
 // grant read access to everyone on db by updating CouchDB security
-db.grantReadAccess(callback)
+db.grantPublicReadAccess(callback)
+
+// grant write access to everyone on db
+db.grantPublicReadAccess(callback)
 
 // grant read access to specific users on db by updating CouchDB security
 db.grantReadAccess(users, callback)
@@ -75,7 +78,10 @@ db.grantReadAccess(users, callback)
 db.grantWriteAccess(users, callback)
 
 // update db security so it's no longer publicly readable
-db.revokeReadAccess(callback)
+db.revokePublicReadAccess(callback)
+
+// update db security so it's no longer publicly writable
+db.revokePublicWriteAccess(callback)
 
 // remove users from couchdb readers for db
 db.revokeReadAccess(users, callback)

@@ -237,7 +237,7 @@ exports['db.add / db.findAll / db.remove / db.findAll'] = function (test) {
         ],
         function (err, results) {
             if (err) {
-                return callback(err);
+                return test.done(err);
             }
             test.equal(results[1].length, 1);
             test.equal(results[1][0].id, 'wibble');
@@ -429,7 +429,7 @@ exports['new databases are only accessible to _admin users'] = function (test) {
     });
 };
 
-exports['db.grantWriteAccess'] = function (test) {
+exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
     var db_url = url.parse(COUCH.url + '/foo');
@@ -448,18 +448,24 @@ exports['db.grantWriteAccess'] = function (test) {
                 });
             }
         };
+        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var tasks = [
             async.apply(hoodie.user.add, 'testuser', 'testing'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(db.grantWriteAccess, 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
-            async.apply(hoodie.request, 'GET', '/_users/org.couchdb.user%3Atestuser', {})
+            async.apply(db.revokeWriteAccess, 'testuser'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc2', {data: {asdf: 123}})
         ];
         async.series(tasks.map(ignoreErrs), function (err, results) {
             test.equal(results[1][1].statusCode, 401);
             test.equal(results[3][1].statusCode, 200);
             test.equal(results[4][1].statusCode, 201);
+            // after revoke - cannot write but can still read!
+            test.equal(results[6][1].statusCode, 200);
+            test.equal(results[7][1].statusCode, 401);
             test.done();
         });
     });

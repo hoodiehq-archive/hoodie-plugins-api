@@ -470,3 +470,45 @@ exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
         });
     });
 };
+
+exports['db.grantReadAccess / revokeReadAccess for specific users'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+
+    var db_url = url.parse(COUCH.url + '/foo');
+    db_url.auth = 'testuser:testing';
+    db_url = url.format(db_url);
+
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        var ignoreErrs = function (fn) {
+            return function (callback) {
+                fn(function () {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return callback.apply(this, [null].concat(args));
+                });
+            }
+        };
+        var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var tasks = [
+            async.apply(hoodie.user.add, 'testuser', 'testing'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(db.grantReadAccess, 'testuser'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
+            async.apply(db.revokeReadAccess, 'testuser'),
+            async.apply(couchr.get, db_url + '/_all_docs'),
+            async.apply(couchr.put, db_url + '/some_doc2', {data: {asdf: 123}})
+        ];
+        async.series(tasks.map(ignoreErrs), function (err, results) {
+            test.equal(results[1][1].statusCode, 401);
+            test.equal(results[3][1].statusCode, 200);
+            test.equal(results[4][1].statusCode, 401);
+            // after revoke
+            test.equal(results[6][1].statusCode, 401);
+            test.equal(results[7][1].statusCode, 401);
+            test.done();
+        });
+    });
+};

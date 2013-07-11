@@ -98,34 +98,41 @@ db.removeIndex(name, callback)
 // query a couchdb view on db
 db.query(index, options, callback)
 
-// list all users
-hoodie.user.findAll(callback)
 
-// add a user account (does not create user's database)
-hoodie.user.add(username, password, callback)
+//
+// hoodie.account API
+//
+hoodie.account.add(type, attrs, callback)
+hoodie.account.update(type, id, changed_attrs, callback)
+hoodie.account.find(type, id, callback)
+hoodie.account.findAll(callback)
+hoodie.account.findAll(type, callback)
+hoodie.account.remove(type, id, callback)
+hoodie.account.removeAll(type, callback)
 
-// subscribe to user database change events
-hoodie.user.on('add', handler)
-hoodie.user.on('remove', handler)
-hoodie.user.on('update', handler)
-hoodie.user.on('change', handler)
+// hoodie.account events
+hoodie.account.on('add', handler)
+hoodie.account.on('remove', handler)
+hoodie.account.on('update', handler)
+hoodie.account.on('change', handler)
 
-// get a user object to make calls against
-hoodie.user(username) => user
+// for single types
+hoodie.account.on('add:type', handler)
+hoodie.account.on('remove:type', handler)
+hoodie.account.on('update:type', handler)
+hoodie.account.on('change:type', handler)
 
-// delete couchdb user
-user.remove(callback)
+// use case: 
+// handle password resets
+hoodie.account.on('add:$passwordReset', function(object) {
+  // set new password in user doc & send it via email
+})
 
-// get user doc
-user.get(callback)
-
-// update some properties on user document
-user.update(changed_attrs, callback)
-
-
+//
 // listen to task document events
-hoodie.task('email').on('add', function (db, doc) { ... })
-hoodie.task('email').on('update', function (db, doc) { ... })
-hoodie.task('email').on('remove', function (db, doc) { ... })
-hoodie.task('email').on('change', function (db, doc) { ... })
+//
+hoodie.task.on('add:type', function (db, doc) { ... })
+hoodie.task.on('update:type', function (db, doc) { ... })
+hoodie.task.on('remove:type', function (db, doc) { ... })
+hoodie.task.on('change:type', function (db, doc) { ... })
 ```

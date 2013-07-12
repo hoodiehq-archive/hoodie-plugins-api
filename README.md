@@ -71,11 +71,11 @@ db.grantPublicReadAccess(callback)
 // grant write access to everyone on db
 db.grantPublicReadAccess(callback)
 
-// grant read access to specific users on db by updating CouchDB security
-db.grantReadAccess(users, callback)
+// grant read access to specific user on db by updating CouchDB security
+db.grantReadAccess(account_type, account_id, callback)
 
-// grant write access to specific users on db by adding role (checked by design doc in db)
-db.grantWriteAccess(users, callback)
+// grant write access to specific user on db by adding role (checked by design doc in db)
+db.grantWriteAccess(account_type, account_id, callback)
 
 // update db security so it's no longer publicly readable
 db.revokePublicReadAccess(callback)
@@ -83,11 +83,11 @@ db.revokePublicReadAccess(callback)
 // update db security so it's no longer publicly writable
 db.revokePublicWriteAccess(callback)
 
-// remove users from couchdb readers for db
-db.revokeReadAccess(users, callback)
+// remove user from couchdb readers for db
+db.revokeReadAccess(account_type, account_id, callback)
 
-// remove role from users so they cannot write to db (checked by design doc)
-db.revokeWriteAccess(users, callback)
+// remove role from user so they cannot write to db (checked by design doc)
+db.revokeWriteAccess(account_type, account_id, callback)
 
 // creates new design doc with CouchDB view on db
 db.addIndex(name, {map: .., reduce: ..}, callback)

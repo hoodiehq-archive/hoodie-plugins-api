@@ -327,17 +327,21 @@ exports['update config from couch'] = function (test) {
     test.done();
 };
 
-exports['user.add / findAll / get / remove / update'] = function (test) {
+exports['account.add / findAll / get / remove / update'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var userdoc = {
+        name: 'testuser',
+        password: 'testing'
+    };
     async.series([
-        hoodie.user.findAll,
-        async.apply(hoodie.user.add, 'testuser', 'testing'),
-        hoodie.user.findAll,
-        hoodie.user('testuser').get,
-        async.apply(hoodie.user('testuser').update, {wibble: 'wobble'}),
-        hoodie.user('testuser').get,
-        hoodie.user('testuser').remove,
-        hoodie.user.findAll
+        async.apply(hoodie.account.findAll, 'user'),
+        async.apply(hoodie.account.add, 'user', userdoc),
+        hoodie.account.findAll,
+        async.apply(hoodie.account.find, 'user', 'testuser'),
+        async.apply(hoodie.account.update, 'user', 'testuser', {wibble: 'wobble'}),
+        async.apply(hoodie.account.find, 'user', 'testuser'),
+        async.apply(hoodie.account.remove, 'user', 'testuser'),
+        hoodie.account.findAll
     ],
     function (err, results) {
         if (err) {
@@ -345,8 +349,8 @@ exports['user.add / findAll / get / remove / update'] = function (test) {
         }
         var docs1 = results[0];
         var docs2 = results[2];
-        var userdoc1 = results[3][0];
-        var userdoc2 = results[5][0];
+        var userdoc1 = results[3];
+        var userdoc2 = results[5];
         var docs3 = results[7];
         test.equal(docs1.length, 0);
         test.equal(docs2.length, 1);
@@ -360,24 +364,24 @@ exports['user.add / findAll / get / remove / update'] = function (test) {
 
 exports['pass through user events from plugin manager'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
-    var user_events = [];
-    hoodie.user.on('add', function (doc) {
-        user_events.push('add ' + doc.name);
+    var account_events = [];
+    hoodie.account.on('add', function (doc) {
+        account_events.push('add ' + doc.name);
     });
-    hoodie.user.on('update', function (doc) {
-        user_events.push('update ' + doc.name);
+    hoodie.account.on('update', function (doc) {
+        account_events.push('update ' + doc.name);
     });
-    hoodie.user.on('remove', function (doc) {
-        user_events.push('remove ' + doc.name);
+    hoodie.account.on('remove', function (doc) {
+        account_events.push('remove ' + doc.name);
     });
-    hoodie.user.on('change', function (doc) {
-        user_events.push('change ' + doc.name);
+    hoodie.account.on('change', function (doc) {
+        account_events.push('change ' + doc.name);
     });
-    hoodie.user.emit('add', {name: 'testuser'});
-    hoodie.user.emit('update', {name: 'testuser'});
-    hoodie.user.emit('remove', {name: 'testuser'});
-    hoodie.user.emit('change', {name: 'testuser'});
-    test.same(user_events, [
+    hoodie.account.emit('add', {name: 'testuser'});
+    hoodie.account.emit('update', {name: 'testuser'});
+    hoodie.account.emit('remove', {name: 'testuser'});
+    hoodie.account.emit('change', {name: 'testuser'});
+    test.same(account_events, [
         'add testuser',
         'update testuser',
         'remove testuser',
@@ -433,7 +437,7 @@ exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
     var db_url = url.parse(COUCH.url + '/foo');
-    db_url.auth = 'testuser:testing';
+    db_url.auth = 'user/testuser:testing';
     db_url = url.format(db_url);
 
     hoodie.database.add('foo', function (err, db) {
@@ -449,13 +453,17 @@ exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
             }
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var userdoc = {
+            name: 'testuser',
+            password: 'testing'
+        };
         var tasks = [
-            async.apply(hoodie.user.add, 'testuser', 'testing'),
+            async.apply(hoodie.account.add, 'user', userdoc),
             async.apply(couchr.get, db_url + '/_all_docs'),
-            async.apply(db.grantWriteAccess, 'testuser'),
+            async.apply(db.grantWriteAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
-            async.apply(db.revokeWriteAccess, 'testuser'),
+            async.apply(db.revokeWriteAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc2', {data: {asdf: 123}})
         ];
@@ -475,7 +483,7 @@ exports['db.grantReadAccess / revokeReadAccess for specific users'] = function (
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
     var db_url = url.parse(COUCH.url + '/foo');
-    db_url.auth = 'testuser:testing';
+    db_url.auth = 'user/testuser:testing';
     db_url = url.format(db_url);
 
     hoodie.database.add('foo', function (err, db) {
@@ -491,13 +499,17 @@ exports['db.grantReadAccess / revokeReadAccess for specific users'] = function (
             }
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var userdoc = {
+            name: 'testuser',
+            password: 'testing'
+        };
         var tasks = [
-            async.apply(hoodie.user.add, 'testuser', 'testing'),
+            async.apply(hoodie.account.add, 'user', userdoc),
             async.apply(couchr.get, db_url + '/_all_docs'),
-            async.apply(db.grantReadAccess, 'testuser'),
+            async.apply(db.grantReadAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
-            async.apply(db.revokeReadAccess, 'testuser'),
+            async.apply(db.revokeReadAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc2', {data: {asdf: 123}})
         ];
@@ -517,7 +529,7 @@ exports['db.revokeReadAccess for a user with write access'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
 
     var db_url = url.parse(COUCH.url + '/foo');
-    db_url.auth = 'testuser:testing';
+    db_url.auth = 'user/testuser:testing';
     db_url = url.format(db_url);
 
     hoodie.database.add('foo', function (err, db) {
@@ -533,13 +545,17 @@ exports['db.revokeReadAccess for a user with write access'] = function (test) {
             }
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var userdoc = {
+            name: 'testuser',
+            password: 'testing'
+        };
         var tasks = [
-            async.apply(hoodie.user.add, 'testuser', 'testing'),
+            async.apply(hoodie.account.add, 'user', userdoc),
             async.apply(couchr.get, db_url + '/_all_docs'),
-            async.apply(db.grantWriteAccess, 'testuser'),
+            async.apply(db.grantWriteAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc', {data: {asdf: 123}}),
-            async.apply(db.revokeReadAccess, 'testuser'),
+            async.apply(db.revokeReadAccess, 'user', 'testuser'),
             async.apply(couchr.get, db_url + '/_all_docs'),
             async.apply(couchr.put, db_url + '/some_doc2', {data: {asdf: 123}})
         ];
@@ -561,11 +577,11 @@ exports['db.grantPublicReadAccess / revokePublicReadAccess'] = function (test) {
     var db_url = COUCH.url + '/foo';
 
     var db_url_testuser1 = url.parse(db_url);
-    db_url_testuser1.auth = 'testuser1:testing';
+    db_url_testuser1.auth = 'user/testuser1:testing';
     db_url_testuser1 = url.format(db_url_testuser1);
 
     var db_url_testuser2 = url.parse(db_url);
-    db_url_testuser2.auth = 'testuser2:testing';
+    db_url_testuser2.auth = 'user/testuser2:testing';
     db_url_testuser2 = url.format(db_url_testuser2);
 
     hoodie.database.add('foo', function (err, db) {
@@ -582,10 +598,18 @@ exports['db.grantPublicReadAccess / revokePublicReadAccess'] = function (test) {
         };
         var opt = {data: {asdf: 123}};
         var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var userdoc1 = {
+            name: 'testuser1',
+            password: 'testing'
+        };
+        var userdoc2 = {
+            name: 'testuser2',
+            password: 'testing'
+        };
         var tasks = [
-            async.apply(hoodie.user.add, 'testuser1', 'testing'),
-            async.apply(hoodie.user.add, 'testuser2', 'testing'),
-            async.apply(db.grantWriteAccess, 'testuser1'),
+            async.apply(hoodie.account.add, 'user', userdoc1),
+            async.apply(hoodie.account.add, 'user', userdoc2),
+            async.apply(db.grantWriteAccess, 'user', 'testuser1'),
             db.grantPublicReadAccess,
             async.apply(couchr.get, db_url_testuser1 + '/_all_docs'),
             async.apply(couchr.put, db_url_testuser1 + '/some_doc', opt),
@@ -626,11 +650,11 @@ exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test)
     var db_url = COUCH.url + '/foo';
 
     var db_url_testuser1 = url.parse(db_url);
-    db_url_testuser1.auth = 'testuser1:testing';
+    db_url_testuser1.auth = 'user/testuser1:testing';
     db_url_testuser1 = url.format(db_url_testuser1);
 
     var db_url_testuser2 = url.parse(db_url);
-    db_url_testuser2.auth = 'testuser2:testing';
+    db_url_testuser2.auth = 'user/testuser2:testing';
     db_url_testuser2 = url.format(db_url_testuser2);
 
     hoodie.database.add('foo', function (err, db) {
@@ -647,10 +671,18 @@ exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test)
         };
         var opt = {data: {asdf: 123}};
         var user_url = '/_users/org.couchdb.user%3Atestuser';
+        var userdoc1 = {
+            name: 'testuser1',
+            password: 'testing'
+        };
+        var userdoc2 = {
+            name: 'testuser2',
+            password: 'testing'
+        };
         var tasks = [
-            async.apply(hoodie.user.add, 'testuser1', 'testing'),
-            async.apply(hoodie.user.add, 'testuser2', 'testing'),
-            async.apply(db.grantWriteAccess, 'testuser1'),
+            async.apply(hoodie.account.add, 'user', userdoc1),
+            async.apply(hoodie.account.add, 'user', userdoc2),
+            async.apply(db.grantWriteAccess, 'user', 'testuser1'),
             db.grantPublicWriteAccess,
             async.apply(couchr.get, db_url_testuser1 + '/_all_docs'),
             async.apply(couchr.put, db_url_testuser1 + '/some_doc1', opt),
@@ -684,3 +716,11 @@ exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test)
         });
     });
 };
+
+
+
+
+// TODO: db.revokePublicReadAccess does not currently revokePublicWriteAccess
+// - that means that granting read access to someone, then granting public write
+//   access, then revoking it would mean the original reader can still write to
+//   the database!

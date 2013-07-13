@@ -10,7 +10,7 @@
         "underscore": "1.4.4"
     },
     "devDependencies": {
-        "multicouch": "0.2.8",
+        "multicouch": ">0.4.0",
         "nodeunit": "latest",
         "rimraf": "2.1.4",
         "mkdirp": "0.3.5",

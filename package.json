@@ -1,5 +1,5 @@
 {
-    "name": "hoodie-db",
+    "name": "hoodie-plugins-api",
     "version": "0.0.1",
     "description": "Hoodie interface to CouchDB",
     "main": "lib/index.js",

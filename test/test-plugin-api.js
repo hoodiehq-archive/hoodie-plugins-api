@@ -789,3 +789,27 @@ exports['db.revokePublicReadAccess should also revoke public write access'] = fu
         });
     });
 };
+
+exports['pass subscribe and unsubscribe calls to manager'] = function (test) {
+    var sources = [];
+    var hoodie = new PluginAPI(_.extend(DEFAULT_OPTIONS, {
+        addSource: function (name) {
+            sources.push(name);
+        },
+        removeSource: function (name) {
+            sources = _.filter(sources, function (n) {
+                return n !== name;
+            });
+        }
+    }));
+    test.same(sources, []);
+    hoodie.task.addSource('foo');
+    test.same(sources, ['foo']);
+    hoodie.task.addSource('bar');
+    test.same(sources, ['foo', 'bar']);
+    hoodie.task.removeSource('bar');
+    test.same(sources, ['foo']);
+    hoodie.task.removeSource('foo');
+    test.same(sources, []);
+    test.done();
+};

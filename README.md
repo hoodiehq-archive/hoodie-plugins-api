@@ -111,20 +111,12 @@ hoodie.account.remove(type, id, callback)
 hoodie.account.removeAll(type, callback)
 
 // hoodie.account events
-hoodie.account.on('add', handler)
-hoodie.account.on('remove', handler)
-hoodie.account.on('update', handler)
 hoodie.account.on('change', handler)
-
-// for single types
-hoodie.account.on('add:type', handler)
-hoodie.account.on('remove:type', handler)
-hoodie.account.on('update:type', handler)
 hoodie.account.on('change:type', handler)
 
 // use case: 
 // handle password resets
-hoodie.account.on('add:$passwordReset', function(object) {
+hoodie.account.on('change:$passwordReset', function(object) {
   // set new password in user doc & send it via email
 })
 
@@ -132,9 +124,7 @@ hoodie.account.on('add:$passwordReset', function(object) {
 //
 // listen to task document events
 //
-hoodie.task.on('add:type', function (db, doc) { ... })
-hoodie.task.on('update:type', function (db, doc) { ... })
-hoodie.task.on('remove:type', function (db, doc) { ... })
+hoodie.task.on('change', function (db, doc) { ... })
 hoodie.task.on('change:type', function (db, doc) { ... })
 
 // add / remove sources (database) to listen for new tasks

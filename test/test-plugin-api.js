@@ -365,26 +365,11 @@ exports['account.add / findAll / get / remove / update'] = function (test) {
 exports['pass through user events from plugin manager'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     var account_events = [];
-    hoodie.account.on('add', function (doc) {
-        account_events.push('add ' + doc.name);
-    });
-    hoodie.account.on('update', function (doc) {
-        account_events.push('update ' + doc.name);
-    });
-    hoodie.account.on('remove', function (doc) {
-        account_events.push('remove ' + doc.name);
-    });
     hoodie.account.on('change', function (doc) {
         account_events.push('change ' + doc.name);
     });
-    hoodie.account.emit('add', {name: 'testuser'});
-    hoodie.account.emit('update', {name: 'testuser'});
-    hoodie.account.emit('remove', {name: 'testuser'});
     hoodie.account.emit('change', {name: 'testuser'});
     test.same(account_events, [
-        'add testuser',
-        'update testuser',
-        'remove testuser',
         'change testuser'
     ]);
     test.done();
@@ -393,29 +378,12 @@ exports['pass through user events from plugin manager'] = function (test) {
 exports['pass through task events'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     var evs = [];
-    hoodie.task('mytask').on('add', function (doc) {
-        evs.push('add ' + doc.name);
-    });
-    hoodie.task('mytask').on('update', function (doc) {
-        evs.push('update ' + doc.name);
-    });
-    hoodie.task('mytask').on('remove', function (doc) {
-        evs.push('remove ' + doc.name);
-    });
-    hoodie.task('mytask').on('change', function (doc) {
+    hoodie.task.on('change', function (doc) {
         evs.push('change ' + doc.name);
     });
-    hoodie.task('mytask').emit('add', {name: 'test'});
-    hoodie.task('mytask').emit('update', {name: 'test'});
-    hoodie.task('mytask').emit('remove', {name: 'test'});
-    hoodie.task('mytask').emit('change', {name: 'test'});
-    hoodie.task('othertask').emit('add', {name: 'test2'});
+    hoodie.task.emit('change', {name: 'test'});
     test.same(evs, [
-        'add test',
-        'update test',
-        'remove test',
         'change test'
-        // othertask doesn't get added
     ]);
     test.done();
 };
@@ -811,5 +779,9 @@ exports['pass subscribe and unsubscribe calls to manager'] = function (test) {
     test.same(sources, ['foo']);
     hoodie.task.removeSource('foo');
     test.same(sources, []);
+    test.done();
+};
+
+exports['proxy task events'] = function (test) {
     test.done();
 };

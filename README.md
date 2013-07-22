@@ -89,6 +89,10 @@ db.revokeReadAccess(account_type, account_id, callback)
 // remove role from user so they cannot write to db (checked by design doc)
 db.revokeWriteAccess(account_type, account_id, callback)
 
+
+// Index / Query API is not yet implemented, see:
+// https://github.com/hoodiehq/hoodie-plugins-api/issues/3
+
 // creates new design doc with CouchDB view on db
 db.addIndex(name, {map: .., reduce: ..}, callback)
 

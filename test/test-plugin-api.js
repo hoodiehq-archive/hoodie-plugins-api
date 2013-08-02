@@ -330,7 +330,7 @@ exports['update config from couch'] = function (test) {
 exports['account.add / findAll / get / remove / update'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     var userdoc = {
-        name: 'testuser',
+        id: 'testuser',
         password: 'testing'
     };
     async.series([
@@ -354,8 +354,8 @@ exports['account.add / findAll / get / remove / update'] = function (test) {
         var docs3 = results[7];
         test.equal(docs1.length, 0);
         test.equal(docs2.length, 1);
-        test.equal(docs2[0].name, 'testuser');
-        test.equal(userdoc1.name, 'testuser');
+        test.equal(docs2[0].name, 'user/testuser');
+        test.equal(userdoc1.name, 'user/testuser');
         test.equal(userdoc2.wibble, 'wobble');
         test.equal(docs3.length, 0);
         test.done();
@@ -422,7 +422,7 @@ exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
-            name: 'testuser',
+            id: 'testuser',
             password: 'testing'
         };
         var tasks = [
@@ -468,7 +468,7 @@ exports['db.grantReadAccess / revokeReadAccess for specific users'] = function (
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
-            name: 'testuser',
+            id: 'testuser',
             password: 'testing'
         };
         var tasks = [
@@ -514,7 +514,7 @@ exports['db.revokeReadAccess for a user with write access'] = function (test) {
         };
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
-            name: 'testuser',
+            id: 'testuser',
             password: 'testing'
         };
         var tasks = [
@@ -567,11 +567,11 @@ exports['db.grantPublicReadAccess / revokePublicReadAccess'] = function (test) {
         var opt = {data: {asdf: 123}};
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
-            name: 'testuser1',
+            id: 'testuser1',
             password: 'testing'
         };
         var userdoc2 = {
-            name: 'testuser2',
+            id: 'testuser2',
             password: 'testing'
         };
         var tasks = [
@@ -640,11 +640,11 @@ exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test)
         var opt = {data: {asdf: 123}};
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
-            name: 'testuser1',
+            id: 'testuser1',
             password: 'testing'
         };
         var userdoc2 = {
-            name: 'testuser2',
+            id: 'testuser2',
             password: 'testing'
         };
         var tasks = [
@@ -713,11 +713,11 @@ exports['db.revokePublicReadAccess should also revoke public write access'] = fu
         var opt = {data: {asdf: 123}};
         var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
-            name: 'testuser1',
+            id: 'testuser1',
             password: 'testing'
         };
         var userdoc2 = {
-            name: 'testuser2',
+            id: 'testuser2',
             password: 'testing'
         };
         var tasks = [
@@ -783,5 +783,69 @@ exports['pass subscribe and unsubscribe calls to manager'] = function (test) {
 };
 
 exports['proxy task events'] = function (test) {
+    test.done();
+};
+
+exports['accounts.parseDoc'] = function (test) {
+    var doc = {
+        "_id": "org.couchdb.user:user/wobble",
+        "_rev": "1-3d269028677df88e4e200b0740fa7971",
+        "name": "user/wobble",
+        "type": "user",
+        "roles": [],
+        "ownerHash": "1msc4g0",
+        "database": "user/1msc4g0",
+        "updatedAt": "2013-08-02T13:11:36.646Z",
+        "createdAt": "2013-08-02T13:11:36.646Z",
+        "signedUpAt": "2013-08-02T13:11:36.646Z",
+        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
+        "salt": "90b42421db5d65d4126e7a6ce641840e"
+    };
+    test.same(require('../lib/accounts').parseDoc(doc), {
+        "_rev": "1-3d269028677df88e4e200b0740fa7971",
+        "name": "user/wobble",
+        "type": "user",
+        "roles": [],
+        "ownerHash": "1msc4g0",
+        "database": "user/1msc4g0",
+        "updatedAt": "2013-08-02T13:11:36.646Z",
+        "createdAt": "2013-08-02T13:11:36.646Z",
+        "signedUpAt": "2013-08-02T13:11:36.646Z",
+        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
+        "salt": "90b42421db5d65d4126e7a6ce641840e",
+        "id": "wobble"
+    });
+    test.done();
+};
+
+exports['accounts.prepareDoc'] = function (test) {
+    var doc = {
+        "_rev": "1-3d269028677df88e4e200b0740fa7971",
+        "name": "user/wobble",
+        "type": "user",
+        "roles": [],
+        "ownerHash": "1msc4g0",
+        "database": "user/1msc4g0",
+        "updatedAt": "2013-08-02T13:11:36.646Z",
+        "createdAt": "2013-08-02T13:11:36.646Z",
+        "signedUpAt": "2013-08-02T13:11:36.646Z",
+        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
+        "salt": "90b42421db5d65d4126e7a6ce641840e",
+        "id": "wobble"
+    };
+    test.same(require('../lib/accounts').prepareDoc(doc), {
+        "_id": "org.couchdb.user:user/wobble",
+        "_rev": "1-3d269028677df88e4e200b0740fa7971",
+        "name": "user/wobble",
+        "type": "user",
+        "roles": [],
+        "ownerHash": "1msc4g0",
+        "database": "user/1msc4g0",
+        "updatedAt": "2013-08-02T13:11:36.646Z",
+        "createdAt": "2013-08-02T13:11:36.646Z",
+        "signedUpAt": "2013-08-02T13:11:36.646Z",
+        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
+        "salt": "90b42421db5d65d4126e7a6ce641840e"
+    });
     test.done();
 };

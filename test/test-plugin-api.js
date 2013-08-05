@@ -883,3 +883,24 @@ exports['db.remove: access doc properties on delete change'] = function (test) {
         test.done();
     });
 };
+
+exports['pass sendEmail calls to plugins-manager'] = function (test) {
+    test.expect(2);
+    var email = {
+        to: 'to@hood.ie',
+        from: 'from@hood.ie',
+        subject: 'wibble',
+        text: 'wobble'
+    };
+    var hoodie = new PluginAPI(_.extend(DEFAULT_OPTIONS, {
+        sendEmail: function (opt, callback) {
+            test.same(opt, email);
+            callback('some error');
+        },
+    }));
+    hoodie.sendEmail(email, function (err) {
+        // test errors are passed back to hoodie.sendEmail callback
+        test.equal(err, 'some error');
+        test.done();
+    });
+};

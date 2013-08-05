@@ -1,18 +1,23 @@
 # Hoodie Plugin API
 
-## Directory structure
+## File and directory structure
 
 ```
-/hoodie-plugin-example
+/hoodie-plugin-plugin_name
     /pocket
-    /js
-    /server
+    hoodie.plugin_name.js
+    index.js
+    package.json
 ```
 
-* __pocket__ - Extends the Pocket admin interface
-* __js__ - Extends the hoodie.js front-end API
-* __server__ - Node.js worker for handling tasks and other events
+* __/pocket__ - Extends the Pocket admin interface (contains a HTML fragment with code and styles)
+* __hoodie.plugin_name.js__ - Extends the hoodie.js front-end API
+* __index.js__ - Node.js worker for handling tasks and other events (this is just the default location, you have more options here, see below)
+* __package.json__ - The plugin's metadata and dependencies (since the plugin should function as an npm module)
 
+The server-side component of the plugin can be left in an index.js for simplicity, but Hoodie will prefer the following, if present:
+* Whatever you reference under `main` in the plugin's `package.json`
+* Whatever you get when you `require()` the plugin root directory
 
 ## Writing workers
 

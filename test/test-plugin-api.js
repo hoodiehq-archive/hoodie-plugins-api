@@ -849,3 +849,37 @@ exports['accounts.prepareDoc'] = function (test) {
     });
     test.done();
 };
+
+exports['db.remove: access doc properties on delete change'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var doc = {
+        id: 'bar',
+        title: 'wibble'
+    };
+    async.series([
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database('foo').add, 'mytype', doc),
+        async.apply(hoodie.database('foo').remove, 'mytype', doc.id),
+        async.apply(
+            couchr.get,
+            hoodie._resolve('/foo/_changes'),
+            {include_docs: true}
+        ),
+        async.apply(hoodie.database.remove, 'foo')
+    ],
+    function (err, results) {
+        if (err) {
+            return test.done(err);
+        }
+        var change = results[3][0].results[1];
+        delete change.doc._rev;
+        test.same(change.doc, {
+            _id: 'mytype/' + doc.id,
+            _deleted: true,
+            title: doc.title,
+            id: doc.id,
+            type: 'mytype'
+        });
+        test.done();
+    });
+};

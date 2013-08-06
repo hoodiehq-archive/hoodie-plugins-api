@@ -111,6 +111,73 @@ exports['task.finish'] = function (test) {
     });
 };
 
+exports['task.error'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.task.on('email:add', function (dbname, task) {
+        test.same(Object.keys(task).sort(), [
+            "to",
+            "subject",
+            "body",
+            "createdBy",
+            "updatedAt",
+            "createdAt",
+            "type",
+            "_rev",
+            "_id",
+            "id"
+        ].sort());
+        var email_err = {
+            error: 'connection_error',
+            message: 'email could not be sent'
+        };
+        hoodie.task.error(dbname, task, email_err, function (err) {
+            test.same(Object.keys(task).sort(), [
+                "to",
+                "subject",
+                "body",
+                "createdBy",
+                "updatedAt",
+                "createdAt",
+                "type",
+                "_rev",
+                "_id",
+                "$processedAt",
+                "$error",
+                "id"
+            ].sort());
+            test.ok(moment(task['$processedAt']).isValid());
+            test.same(task['$error'], {
+                error: 'connection_error',
+                message: 'email could not be sent'
+            });
+            test.done(err);
+        });
+    });
+    var email = {
+        "to": "joe@example.com",
+        "subject": "Hey Joe",
+        "body": "wassup?",
+        "createdBy": "confirmed",
+        "updatedAt": "2013-08-02T14:47:04.917Z",
+        "createdAt": "2013-08-02T14:47:04.917Z",
+        "id": "3621161",
+        "type": "$email"
+    };
+    hoodie.database.add('testdb', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        db.add('$email', email, function (err, doc) {
+            if (err) {
+                return test.done(err);
+            }
+            email._id = doc.id;
+            email._rev = doc.rev;
+            hoodie.task.emit('email:add', 'testdb', email);
+        });
+    });
+};
+
 exports['request'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.request('GET', '/', {}, function (err, data, res) {

@@ -1,5 +1,6 @@
 var PluginAPI = require('../lib/index').PluginAPI,
     couchr = require('couchr'),
+    moment = require('moment'),
     utils = require('./lib/utils'),
     async = require('async'),
     url = require('url'),
@@ -48,6 +49,66 @@ exports.tearDown = function (callback) {
         callback();
     });
     this.couch.stop();
+};
+
+exports['task.finish'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.task.on('email:add', function (dbname, task) {
+        test.same(Object.keys(task).sort(), [
+            "to",
+            "subject",
+            "body",
+            "createdBy",
+            "updatedAt",
+            "createdAt",
+            "type",
+            "_rev",
+            "_id",
+            "id"
+        ].sort());
+        hoodie.task.finish(dbname, task, function (err) {
+            test.same(Object.keys(task).sort(), [
+                "to",
+                "subject",
+                "body",
+                "createdBy",
+                "updatedAt",
+                "createdAt",
+                "type",
+                "_rev",
+                "_id",
+                "$processedAt",
+                "_deleted",
+                "id"
+            ].sort());
+            test.ok(task._deleted);
+            test.ok(moment(task['$processedAt']).isValid());
+            test.done(err);
+        });
+    });
+    var email = {
+        "to": "joe@example.com",
+        "subject": "Hey Joe",
+        "body": "wassup?",
+        "createdBy": "confirmed",
+        "updatedAt": "2013-08-02T14:47:04.917Z",
+        "createdAt": "2013-08-02T14:47:04.917Z",
+        "id": "3621161",
+        "type": "$email"
+    };
+    hoodie.database.add('testdb', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+        db.add('$email', email, function (err, doc) {
+            if (err) {
+                return test.done(err);
+            }
+            email._id = doc.id;
+            email._rev = doc.rev;
+            hoodie.task.emit('email:add', 'testdb', email);
+        });
+    });
 };
 
 exports['request'] = function (test) {

@@ -51,7 +51,7 @@ exports.tearDown = function (callback) {
     this.couch.stop();
 };
 
-exports['task.finish'] = function (test) {
+exports['task.success'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.task.on('email:add', function (dbname, task) {
         test.same(Object.keys(task).sort(), [
@@ -66,7 +66,7 @@ exports['task.finish'] = function (test) {
             "_id",
             "id"
         ].sort());
-        hoodie.task.finish(dbname, task, function (err) {
+        hoodie.task.success(dbname, task, function (err) {
             test.same(Object.keys(task).sort(), [
                 "to",
                 "subject",

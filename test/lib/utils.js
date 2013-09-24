@@ -20,6 +20,7 @@ exports.setupCouch = function (opts, callback) {
             if (err) {
                 return callback(err);
             }
+            process.setMaxListeners(100);
             process.on('exit', function (code) {
                 couch.once('stop', function () {
                     process.exit(code);

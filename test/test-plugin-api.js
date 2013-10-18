@@ -1067,6 +1067,7 @@ exports['db.remove: access doc properties on delete change'] = function (test) {
         }
         var change = results[3][0].results[1];
         delete change.doc._rev;
+        delete change.doc.createdAt;
         test.same(change.doc, {
             _id: 'mytype/' + doc.id,
             _deleted: true,
@@ -1095,6 +1096,27 @@ exports['pass sendEmail calls to plugins-manager'] = function (test) {
     hoodie.sendEmail(email, function (err) {
         // test errors are passed back to hoodie.sendEmail callback
         test.equal(err, 'some error');
+        test.done();
+    });
+};
+
+exports['db.add: set createdAt'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var doc = {
+        id: 'bar',
+        title: 'wibble'
+    };
+    async.series([
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database('foo').add, 'mytype', doc),
+        async.apply(hoodie.database('foo').find, 'mytype', 'bar')
+    ],
+    function (err, results) {
+        if (err) {
+            return test.done(err);
+        }
+        var doc = results[2];
+        test.ok(doc.createdAt, 'createdAt property set');
         test.done();
     });
 };

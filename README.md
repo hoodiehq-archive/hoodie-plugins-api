@@ -74,7 +74,7 @@ db.removeAll(type, callback)
 db.grantPublicReadAccess(callback)
 
 // grant write access to everyone on db
-db.grantPublicReadAccess(callback)
+db.grantPublicWriteAccess(callback)
 
 // grant read access to specific user on db by updating CouchDB security
 db.grantReadAccess(account_type, account_id, callback)

@@ -4,12 +4,14 @@ var MultiCouch = require('multicouch'),
     mkdirp = require('mkdirp'),
     rimraf = require('rimraf'),
     async = require('async'),
-    urlParse = require('url').parse;
+    urlParse = require('url').parse,
+    couch;
 
 
 exports.setupCouch = function (opts, callback) {
     var cmd = 'pkill -fu ' + process.env.LOGNAME + ' ' + opts.data_dir;
-    child_process.exec(cmd, function (err, stdout, stderr) {
+
+    child_process.exec(cmd, function () {
         async.series([
             async.apply(rimraf, opts.data_dir),
             async.apply(mkdirp, opts.data_dir),
@@ -30,9 +32,10 @@ exports.setupCouch = function (opts, callback) {
             callback(null, couch);
         });
     });
-}
+};
 
 function startCouch(opts, callback) {
+
     // MultiCouch config object
     var couch_cfg = {
         port: urlParse(opts.url).port,
@@ -43,6 +46,7 @@ function startCouch(opts, callback) {
     };
     // starts a local couchdb server using the Hoodie app's data dir
     var couchdb = new MultiCouch(couch_cfg);
+    couch = couchdb;
     // local couchdb has started
     couchdb.on('start', function () {
         // give it time to be ready for requests
@@ -50,7 +54,6 @@ function startCouch(opts, callback) {
             if (err) {
                 return callback(err);
             }
-            couch = couchdb;
             return callback();
         });
     });
@@ -72,6 +75,7 @@ function pollCouch(opts, couchdb, callback) {
             url: opts.url + '/_all_dbs',
             json: true
         };
+
         request(options, function (err, res, body) {
             if (res && res.statusCode === 200 && body.length === 2) {
                 return callback(null, couchdb);

@@ -42,6 +42,7 @@ exports.setUp = function (callback) {
         ],
         callback);
     });
+
 };
 
 exports.tearDown = function (callback) {
@@ -55,46 +56,46 @@ exports['task.success'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.task.on('email:add', function (dbname, task) {
         test.same(Object.keys(task).sort(), [
-            "to",
-            "subject",
-            "body",
-            "createdBy",
-            "updatedAt",
-            "createdAt",
-            "type",
-            "_rev",
-            "_id",
-            "id"
+            'to',
+            'subject',
+            'body',
+            'createdBy',
+            'updatedAt',
+            'createdAt',
+            'type',
+            '_rev',
+            '_id',
+            'id'
         ].sort());
         hoodie.task.success(dbname, task, function (err) {
             test.same(Object.keys(task).sort(), [
-                "to",
-                "subject",
-                "body",
-                "createdBy",
-                "updatedAt",
-                "createdAt",
-                "type",
-                "_rev",
-                "_id",
-                "$processedAt",
-                "_deleted",
-                "id"
+                'to',
+                'subject',
+                'body',
+                'createdBy',
+                'updatedAt',
+                'createdAt',
+                'type',
+                '_rev',
+                '_id',
+                '$processedAt',
+                '_deleted',
+                'id'
             ].sort());
             test.ok(task._deleted);
-            test.ok(moment(task['$processedAt']).isValid());
+            test.ok(moment(task.$processedAt).isValid());
             test.done(err);
         });
     });
     var email = {
-        "to": "joe@example.com",
-        "subject": "Hey Joe",
-        "body": "wassup?",
-        "createdBy": "confirmed",
-        "updatedAt": "2013-08-02T14:47:04.917Z",
-        "createdAt": "2013-08-02T14:47:04.917Z",
-        "id": "3621161",
-        "type": "$email"
+        'to': 'joe@example.com',
+        'subject': 'Hey Joe',
+        'body': 'wassup?',
+        'createdBy': 'confirmed',
+        'updatedAt': '2013-08-02T14:47:04.917Z',
+        'createdAt': '2013-08-02T14:47:04.917Z',
+        'id': '3621161',
+        'type': '$email'
     };
     hoodie.database.add('testdb', function (err, db) {
         if (err) {
@@ -118,14 +119,14 @@ exports['task.success no callback'] = function (test) {
         setTimeout(test.done, 200);
     });
     var email = {
-        "to": "joe@example.com",
-        "subject": "Hey Joe",
-        "body": "wassup?",
-        "createdBy": "confirmed",
-        "updatedAt": "2013-08-02T14:47:04.917Z",
-        "createdAt": "2013-08-02T14:47:04.917Z",
-        "id": "3621161",
-        "type": "$email"
+        'to': 'joe@example.com',
+        'subject': 'Hey Joe',
+        'body': 'wassup?',
+        'createdBy': 'confirmed',
+        'updatedAt': '2013-08-02T14:47:04.917Z',
+        'createdAt': '2013-08-02T14:47:04.917Z',
+        'id': '3621161',
+        'type': '$email'
     };
     hoodie.database.add('testdb', function (err, db) {
         if (err) {
@@ -146,16 +147,16 @@ exports['task.error'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.task.on('email:add', function (dbname, task) {
         test.same(Object.keys(task).sort(), [
-            "to",
-            "subject",
-            "body",
-            "createdBy",
-            "updatedAt",
-            "createdAt",
-            "type",
-            "_rev",
-            "_id",
-            "id"
+            'to',
+            'subject',
+            'body',
+            'createdBy',
+            'updatedAt',
+            'createdAt',
+            'type',
+            '_rev',
+            '_id',
+            'id'
         ].sort());
         var email_err = {
             error: 'connection_error',
@@ -163,21 +164,21 @@ exports['task.error'] = function (test) {
         };
         hoodie.task.error(dbname, task, email_err, function (err) {
             test.same(Object.keys(task).sort(), [
-                "to",
-                "subject",
-                "body",
-                "createdBy",
-                "updatedAt",
-                "createdAt",
-                "type",
-                "_rev",
-                "_id",
-                "$processedAt",
-                "$error",
-                "id"
+                'to',
+                'subject',
+                'body',
+                'createdBy',
+                'updatedAt',
+                'createdAt',
+                'type',
+                '_rev',
+                '_id',
+                '$processedAt',
+                '$error',
+                'id'
             ].sort());
-            test.ok(moment(task['$processedAt']).isValid());
-            test.same(task['$error'], {
+            test.ok(moment(task.$processedAt).isValid());
+            test.same(task.$error, {
                 error: 'connection_error',
                 message: 'email could not be sent'
             });
@@ -185,14 +186,14 @@ exports['task.error'] = function (test) {
         });
     });
     var email = {
-        "to": "joe@example.com",
-        "subject": "Hey Joe",
-        "body": "wassup?",
-        "createdBy": "confirmed",
-        "updatedAt": "2013-08-02T14:47:04.917Z",
-        "createdAt": "2013-08-02T14:47:04.917Z",
-        "id": "3621161",
-        "type": "$email"
+        'to': 'joe@example.com',
+        'subject': 'Hey Joe',
+        'body': 'wassup?',
+        'createdBy': 'confirmed',
+        'updatedAt': '2013-08-02T14:47:04.917Z',
+        'createdAt': '2013-08-02T14:47:04.917Z',
+        'id': '3621161',
+        'type': '$email'
     };
     hoodie.database.add('testdb', function (err, db) {
         if (err) {
@@ -220,14 +221,14 @@ exports['task.error no callback'] = function (test) {
         setTimeout(test.done, 200);
     });
     var email = {
-        "to": "joe@example.com",
-        "subject": "Hey Joe",
-        "body": "wassup?",
-        "createdBy": "confirmed",
-        "updatedAt": "2013-08-02T14:47:04.917Z",
-        "createdAt": "2013-08-02T14:47:04.917Z",
-        "id": "3621161",
-        "type": "$email"
+        'to': 'joe@example.com',
+        'subject': 'Hey Joe',
+        'body': 'wassup?',
+        'createdBy': 'confirmed',
+        'updatedAt': '2013-08-02T14:47:04.917Z',
+        'createdAt': '2013-08-02T14:47:04.917Z',
+        'id': '3621161',
+        'type': '$email'
     };
     hoodie.database.add('testdb', function (err, db) {
         if (err) {
@@ -244,9 +245,9 @@ exports['task.error no callback'] = function (test) {
     });
 };
 
-exports['request'] = function (test) {
+exports.request = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
-    hoodie.request('GET', '/', {}, function (err, data, res) {
+    hoodie.request('GET', '/', {}, function (err, data) {
         if (err) {
             return test.done(err);
         }
@@ -337,14 +338,14 @@ exports['db.add / db.get / db.update / db.get'] = function (test) {
             },
             function (cb) {
                 db.find('mytype', 'asdf', function (err, doc) {
-                   if (err) {
-                       return cb(err);
-                   }
-                   test.equal(doc.id, 'asdf');
-                   test.equal(doc.type, 'mytype');
-                   test.equal(doc.title, 'Test Document');
-                   test.equal(doc.foo, 'bar');
-                   return cb();
+                    if (err) {
+                        return cb(err);
+                    }
+                    test.equal(doc.id, 'asdf');
+                    test.equal(doc.type, 'mytype');
+                    test.equal(doc.title, 'Test Document');
+                    test.equal(doc.foo, 'bar');
+                    return cb();
                 });
             }
         ],
@@ -503,7 +504,7 @@ exports['config.set / config.get'] = function (test) {
                 return test.done(err);
             }
             test.equal(doc.config.foo, 'baz');
-            couchr.get(otherplugin_url, function (err, doc2) {
+            couchr.get(otherplugin_url, function (err) {
                 test.same(err.error, 'not_found');
                 test.done();
             });
@@ -584,7 +585,7 @@ exports['pass through task events'] = function (test) {
 
 exports['new databases are only accessible to _admin users'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
-    hoodie.database.add('foo', function (err, db) {
+    hoodie.database.add('foo', function (err) {
         if (err) {
             return test.done(err);
         }
@@ -612,9 +613,8 @@ exports['db.grantWriteAccess / db.revokeWriteAccess'] = function (test) {
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
             id: 'testuser',
             password: 'testing'
@@ -658,9 +658,8 @@ exports['db.grantReadAccess / revokeReadAccess for specific users'] = function (
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
             id: 'testuser',
             password: 'testing'
@@ -704,9 +703,8 @@ exports['db.revokeReadAccess for a user with write access'] = function (test) {
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc = {
             id: 'testuser',
             password: 'testing'
@@ -756,10 +754,9 @@ exports['db.grantPublicReadAccess / revokePublicReadAccess'] = function (test) {
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
         var opt = {data: {asdf: 123}};
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
             id: 'testuser1',
             password: 'testing'
@@ -829,10 +826,9 @@ exports['db.grantPublicWriteAccess / revokePublicWriteAccess'] = function (test)
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
         var opt = {data: {asdf: 123}};
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
             id: 'testuser1',
             password: 'testing'
@@ -902,10 +898,9 @@ exports['db.revokePublicReadAccess should also revoke public write access'] = fu
                     var args = Array.prototype.slice.call(arguments, 1);
                     return callback.apply(this, [null].concat(args));
                 });
-            }
+            };
         };
         var opt = {data: {asdf: 123}};
-        var user_url = '/_users/org.couchdb.user%3Atestuser';
         var userdoc1 = {
             id: 'testuser1',
             password: 'testing'
@@ -982,64 +977,64 @@ exports['proxy task events'] = function (test) {
 
 exports['accounts.parseDoc'] = function (test) {
     var doc = {
-        "_id": "org.couchdb.user:user/wobble",
-        "_rev": "1-3d269028677df88e4e200b0740fa7971",
-        "name": "user/wobble",
-        "type": "user",
-        "roles": [],
-        "ownerHash": "1msc4g0",
-        "database": "user/1msc4g0",
-        "updatedAt": "2013-08-02T13:11:36.646Z",
-        "createdAt": "2013-08-02T13:11:36.646Z",
-        "signedUpAt": "2013-08-02T13:11:36.646Z",
-        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
-        "salt": "90b42421db5d65d4126e7a6ce641840e"
+        '_id': 'org.couchdb.user:user/wobble',
+        '_rev': '1-3d269028677df88e4e200b0740fa7971',
+        'name': 'user/wobble',
+        'type': 'user',
+        'roles': [],
+        'ownerHash': '1msc4g0',
+        'database': 'user/1msc4g0',
+        'updatedAt': '2013-08-02T13:11:36.646Z',
+        'createdAt': '2013-08-02T13:11:36.646Z',
+        'signedUpAt': '2013-08-02T13:11:36.646Z',
+        'password_sha': '32010a749794347f10b1aea407db8c4230e7f27b',
+        'salt': '90b42421db5d65d4126e7a6ce641840e'
     };
     test.same(require('../lib/accounts').parseDoc(doc), {
-        "_rev": "1-3d269028677df88e4e200b0740fa7971",
-        "name": "user/wobble",
-        "type": "user",
-        "roles": [],
-        "ownerHash": "1msc4g0",
-        "database": "user/1msc4g0",
-        "updatedAt": "2013-08-02T13:11:36.646Z",
-        "createdAt": "2013-08-02T13:11:36.646Z",
-        "signedUpAt": "2013-08-02T13:11:36.646Z",
-        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
-        "salt": "90b42421db5d65d4126e7a6ce641840e",
-        "id": "wobble"
+        '_rev': '1-3d269028677df88e4e200b0740fa7971',
+        'name': 'user/wobble',
+        'type': 'user',
+        'roles': [],
+        'ownerHash': '1msc4g0',
+        'database': 'user/1msc4g0',
+        'updatedAt': '2013-08-02T13:11:36.646Z',
+        'createdAt': '2013-08-02T13:11:36.646Z',
+        'signedUpAt': '2013-08-02T13:11:36.646Z',
+        'password_sha': '32010a749794347f10b1aea407db8c4230e7f27b',
+        'salt': '90b42421db5d65d4126e7a6ce641840e',
+        'id': 'wobble'
     });
     test.done();
 };
 
 exports['accounts.prepareDoc'] = function (test) {
     var doc = {
-        "_rev": "1-3d269028677df88e4e200b0740fa7971",
-        "name": "user/wobble",
-        "type": "user",
-        "roles": [],
-        "ownerHash": "1msc4g0",
-        "database": "user/1msc4g0",
-        "updatedAt": "2013-08-02T13:11:36.646Z",
-        "createdAt": "2013-08-02T13:11:36.646Z",
-        "signedUpAt": "2013-08-02T13:11:36.646Z",
-        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
-        "salt": "90b42421db5d65d4126e7a6ce641840e",
-        "id": "wobble"
+        '_rev': '1-3d269028677df88e4e200b0740fa7971',
+        'name': 'user/wobble',
+        'type': 'user',
+        'roles': [],
+        'ownerHash': '1msc4g0',
+        'database': 'user/1msc4g0',
+        'updatedAt': '2013-08-02T13:11:36.646Z',
+        'createdAt': '2013-08-02T13:11:36.646Z',
+        'signedUpAt': '2013-08-02T13:11:36.646Z',
+        'password_sha': '32010a749794347f10b1aea407db8c4230e7f27b',
+        'salt': '90b42421db5d65d4126e7a6ce641840e',
+        'id': 'wobble'
     };
     test.same(require('../lib/accounts').prepareDoc(doc), {
-        "_id": "org.couchdb.user:user/wobble",
-        "_rev": "1-3d269028677df88e4e200b0740fa7971",
-        "name": "user/wobble",
-        "type": "user",
-        "roles": [],
-        "ownerHash": "1msc4g0",
-        "database": "user/1msc4g0",
-        "updatedAt": "2013-08-02T13:11:36.646Z",
-        "createdAt": "2013-08-02T13:11:36.646Z",
-        "signedUpAt": "2013-08-02T13:11:36.646Z",
-        "password_sha": "32010a749794347f10b1aea407db8c4230e7f27b",
-        "salt": "90b42421db5d65d4126e7a6ce641840e"
+        '_id': 'org.couchdb.user:user/wobble',
+        '_rev': '1-3d269028677df88e4e200b0740fa7971',
+        'name': 'user/wobble',
+        'type': 'user',
+        'roles': [],
+        'ownerHash': '1msc4g0',
+        'database': 'user/1msc4g0',
+        'updatedAt': '2013-08-02T13:11:36.646Z',
+        'createdAt': '2013-08-02T13:11:36.646Z',
+        'signedUpAt': '2013-08-02T13:11:36.646Z',
+        'password_sha': '32010a749794347f10b1aea407db8c4230e7f27b',
+        'salt': '90b42421db5d65d4126e7a6ce641840e'
     });
     test.done();
 };

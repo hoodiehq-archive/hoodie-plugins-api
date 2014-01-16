@@ -5,8 +5,27 @@ var MultiCouch = require('multicouch'),
     rimraf = require('rimraf'),
     async = require('async'),
     urlParse = require('url').parse,
+    fs = require('fs'),
     couch;
 
+var couch_env = (function () {
+
+    var localCouch = {};
+    // check filesystem for likely couch paths
+    if (fs.existsSync('/usr/local/bin/couchdb')) {
+        localCouch.bin = '/usr/local/bin/couchdb';
+        localCouch.default_ini = '/usr/local/etc/couchdb/default.ini';
+    } else if (fs.existsSync('/opt/local/bin/couchdb')) {
+        localCouch.bin = '/opt/local/bin/couchdb';
+        localCouch.default_ini = '/opt/local/etc/couchdb/default.ini';
+    } else if (fs.existsSync('/usr/bin/couchdb')) {
+        localCouch.bin = '/usr/bin/couchdb';
+        localCouch.default_ini = '/etc/couchdb/default.ini';
+    }
+
+    return localCouch;
+
+}());
 
 exports.setupCouch = function (opts, callback) {
     var cmd = 'pkill -fu ' + process.env.LOGNAME + ' ' + opts.data_dir;
@@ -40,8 +59,8 @@ function startCouch(opts, callback) {
     var couch_cfg = {
         port: urlParse(opts.url).port,
         prefix: opts.data_dir,
-        couchdb_path: '/usr/bin/couchdb',
-        default_sys_ini: '/etc/couchdb/default.ini',
+        couchdb_path: couch_env.bin,
+        default_sys_ini: couch_env.default_init,
         respawn: false // otherwise causes problems shutting down
     };
     // starts a local couchdb server using the Hoodie app's data dir

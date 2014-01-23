@@ -88,6 +88,13 @@ db.revokePublicReadAccess(callback)
 // update db security so it's no longer publicly writable
 db.revokePublicWriteAccess(callback)
 
+// grant db update privileges to users, but only for their own docs
+db.grantPerUserWriteAccess(callback)
+
+// revoke db update priviliges for users
+db.revokePerUserWriteAccess(callback)
+
+
 // remove user from couchdb readers for db
 db.revokeReadAccess(account_type, account_id, callback)
 
@@ -123,7 +130,7 @@ hoodie.account.removeAll(type, callback)
 hoodie.account.on('change', handler)
 hoodie.account.on('change:type', handler)
 
-// use case: 
+// use case:
 // handle password resets
 hoodie.account.on('change:$passwordReset', function(object) {
   // set new password in user doc & send it via email

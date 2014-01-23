@@ -140,6 +140,12 @@ hoodie.task.on('change:type', function (db, doc) { ... })
 hoodie.task.addSource( databaseName )
 hoodie.task.removeSource( databaseName )
 
+// mark task as complete
+hoodie.task.success( databaseName, taskDoc, [callback] )
+
+// mark task as errored
+hoodie.task.error( databaseName, taskDoc, error, [callback] )
+
 // send emails
 hoodie.sendEmail({
     from: "Fred Foo ✔ <foo@blurdybloop.com>", // sender address

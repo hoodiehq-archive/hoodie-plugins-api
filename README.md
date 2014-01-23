@@ -139,4 +139,31 @@ hoodie.task.on('change:type', function (db, doc) { ... })
 // add / remove sources (database) to listen for new tasks
 hoodie.task.addSource( databaseName )
 hoodie.task.removeSource( databaseName )
+
+// send emails
+hoodie.sendEmail({
+    from: "Fred Foo ✔ <foo@blurdybloop.com>", // sender address
+    to: "bar@blurdybloop.com, baz@blurdybloop.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world ✔", // plaintext body
+    html: "<b>Hello world ✔</b>" // html body
+}, callback)
+
+// sending emails uses nodemailer API:
+// https://github.com/andris9/Nodemailer
+
+// you can also pass attachments as dataURIs:
+hoodie.sendEmail({
+  to: 'test@example.com',
+  from: 'hoodie@example.com',
+  subject: 'test',
+  text: 'blah blah',
+  attachments: [
+    {dataURI: 'data:text/plain;base64,SGVsbG8sIFdvcmxkIQ%3D%3D', ...}
+  ]
+}, callback);
+
+// please note, the 'filePath' property usable on attachments in nodemail
+// will be stripped in hoodie to prevent accidentally emailing out files
+// from the server
 ```

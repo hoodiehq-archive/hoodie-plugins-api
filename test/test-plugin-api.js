@@ -1115,3 +1115,43 @@ exports['db.add: set createdAt'] = function (test) {
         test.done();
     });
 };
+
+exports['db.addPermission / db.removePermission'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var permission_fn = function (newDoc, oldDoc, userCtx) {
+        if (newDoc.type == 'notthis') {
+            throw {unauthorized: 'nope!'};
+        }
+    };
+    var doc = {
+        id: 'bar',
+        title: 'wibble'
+    };
+    async.series([
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database('foo').addPermission,
+            'mypermission', permission_fn
+        ),
+        async.apply(hoodie.database('foo').add, 'mytype', doc),
+    ],
+    function (err, results) {
+        if (err) {
+            return test.done(err);
+        }
+        hoodie.database('foo').add('notthis', doc, function (err) {
+            // saving doc should error
+            test.ok(err);
+            async.series([
+                async.apply(hoodie.database('foo').removePermission,
+                    'mypermission'
+                ),
+                async.apply(hoodie.database('foo').add, 'notthis', doc)
+            ],
+            function (err) {
+                // should be able to save doc now
+                test.ok(!err);
+                test.done();
+            });
+        });
+    });
+};

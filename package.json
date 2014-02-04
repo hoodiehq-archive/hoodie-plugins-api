@@ -1,6 +1,6 @@
 {
   "name": "hoodie-plugins-api",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "Hoodie interface to CouchDB",
   "main": "lib/index.js",
   "dependencies": {

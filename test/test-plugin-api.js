@@ -1155,3 +1155,12 @@ exports['db.addPermission / db.removePermission'] = function (test) {
         });
     });
 };
+
+exports['database.add with existing db'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    async.series([
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database.add, 'foo')
+    ],
+    test.done);
+};

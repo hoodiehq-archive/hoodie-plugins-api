@@ -1164,3 +1164,48 @@ exports['database.add with existing db'] = function (test) {
     ],
     test.done);
 };
+
+exports['db.addPermission with existing doc'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    var permission_fn = function (newDoc, oldDoc, userCtx) {
+        if (newDoc.type == 'notthis') {
+            throw {unauthorized: 'nope!'};
+        }
+    };
+    var permission_fn2 = function (newDoc, oldDoc, userCtx) {
+        throw {unauthorized: 'nope2!'};
+    };
+    var doc = {
+        id: 'bar',
+        title: 'wibble'
+    };
+    async.series([
+        async.apply(hoodie.database.add, 'foo'),
+        async.apply(hoodie.database('foo').addPermission,
+            'mypermission', permission_fn
+        ),
+        async.apply(hoodie.database('foo').addPermission,
+            'mypermission', permission_fn2
+        )
+    ],
+    function (err, results) {
+        if (err) {
+            return test.done(err);
+        }
+        hoodie.database('foo').add('mytype', doc, function (err) {
+            // saving any doc should now error (thanks to permission_fn2)
+            test.ok(err);
+            async.series([
+                async.apply(hoodie.database('foo').removePermission,
+                    'mypermission'
+                ),
+                async.apply(hoodie.database('foo').add, 'notthis', doc)
+            ],
+            function (err) {
+                // should be able to save doc now
+                test.ok(!err);
+                test.done();
+            });
+        });
+    });
+};

@@ -1,5 +1,8 @@
 # Hoodie Plugin API
 [![Build Status](https://travis-ci.org/hoodiehq/hoodie-plugins-api.svg)](https://travis-ci.org/hoodiehq/hoodie-plugins-api)
+[![Dependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api)
+[![devDependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api#info=devDependencies)
+
 
 ## File and directory structure
 

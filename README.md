@@ -1,4 +1,5 @@
 # Hoodie Plugin API
+[![Build Status](https://travis-ci.org/hoodiehq/hoodie-plugins-api.svg)](https://travis-ci.org/hoodiehq/hoodie-plugins-api)
 
 ## File and directory structure
 

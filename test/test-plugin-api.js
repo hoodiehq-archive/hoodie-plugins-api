@@ -1209,3 +1209,140 @@ exports['db.addPermission with existing doc'] = function (test) {
         });
     });
 };
+
+exports['db.add / db.addIndex / db.query'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+
+        var doc1 = {id: 'rich-tea', name: 'Rich tea'};
+        var doc2 = {id: 'digestive', name: 'Digestive'};
+        var doc3 = {id: 'chocolate-chip', name: 'Chocolate chip'};
+
+        async.parallel([
+            async.apply(db.add, 'biscuit', doc1),
+            async.apply(db.add, 'biscuit', doc2),
+            async.apply(db.add, 'cookie', doc3)
+        ], function (err) {
+            if (err) {
+                return test.done(err);
+            }
+            var index = {
+                map: function (doc) {
+                    emit(doc.type, 1);
+                },
+                reduce: function (key, values, rereduce) {
+                    return sum(values);
+                }
+            };
+
+            db.addIndex('by_type', index, function (err, data) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.ok(data.ok);
+                test.equal(data.id, '_design/views');
+                test.equal(typeof data.rev, 'string');
+
+                db.query('by_type', {group_level: 1}, function (err, rows, meta) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    test.ok(_.isArray(rows));
+                    test.equal(rows.length, 2);
+                    test.equal(rows[0].key, 'biscuit');
+                    test.equal(rows[0].value, 2);
+                    test.equal(rows[1].key, 'cookie');
+                    test.equal(rows[1].value, 1);
+                    test.done();
+                });
+            });
+        });
+    });
+};
+
+exports['db.addIndex / db.removeIndex'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+
+        var index = {
+            map: function (doc) {
+                emit(doc.type, 1);
+            }
+        };
+
+        db.addIndex('by_type', index, function (err, data) {
+            if (err) {
+                return test.done(err);
+            }
+            test.ok(data.ok);
+            test.equal(data.id, '_design/views');
+            test.equal(typeof data.rev, 'string');
+
+            db.query('by_type', function (err, rows, meta) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.ok(_.isArray(rows));
+
+                db.removeIndex('by_type', function (err, data) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    test.ok(data.ok);
+                    test.equal(data.id, '_design/views');
+                    test.equal(typeof data.rev, 'string');
+
+                    // Now that index has been removed we shouldnt be able to
+                    // query the non existent view.
+                    db.query('by_type', function (err) {
+                        test.equal(err.error, 'not_found');
+                        test.equal(err.reason, 'missing_named_view');
+                        test.done();
+                    });
+                });
+            });
+        });
+    });
+};
+
+exports['db.addIndex twice without changes to map/reduce'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+
+        var index = {
+            map: function (doc) {
+                emit(doc.type, 1);
+            }
+        };
+
+        db.addIndex('by_type', index, function (err, data) {
+            if (err) {
+                return test.done(err);
+            }
+            test.ok(data.ok);
+
+            db.addIndex('by_type', index, function (err, data) {
+                if (err) {
+                    return test.done(err);
+                }
+                // response should be ok but note that rev is still 1 as adding
+                // the exact same view more than once won't result in the design
+                // document being updated in the database.
+                test.equal(data.ok, true);
+                test.equal(data.id, '_design/views');
+                test.ok(/^1-/.test(data.rev));
+                test.done();
+            });
+        });
+    });
+};
+

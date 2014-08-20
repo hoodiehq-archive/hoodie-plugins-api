@@ -99,8 +99,7 @@ db.revokeReadAccess(account_type, account_id, callback)
 db.revokeWriteAccess(account_type, account_id, callback)
 
 
-// Index / Query API is not yet implemented, see:
-// https://github.com/hoodiehq/hoodie-plugins-api/issues/3
+// Index / Query API
 
 // creates new design doc with CouchDB view on db
 db.addIndex(name, {map: .., reduce: ..}, callback)

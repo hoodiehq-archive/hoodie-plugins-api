@@ -1263,6 +1263,75 @@ exports['db.add / db.addIndex / db.query'] = function (test) {
     });
 };
 
+exports['db.addIndex / db.add / db.query with and without params.parse'] = function (test) {
+    var hoodie = new PluginAPI(DEFAULT_OPTIONS);
+    hoodie.database.add('foo', function (err, db) {
+        if (err) {
+            return test.done(err);
+        }
+
+        var index = {
+            map: function (doc) {
+                emit(doc.type, doc);
+            }
+        };
+
+        async.parallel([
+            async.apply(db.add, 'biscuit', {id: 'rich-tea'}),
+            async.apply(db.add, 'biscuit', {id: 'digestive'}),
+            async.apply(db.add, 'cookie', {id: 'chocolate-chip'}),
+            async.apply(db.addIndex, 'by_type', index)
+        ], function (err) {
+            if (err) {
+                return test.done(err);
+            }
+
+            db.query('by_type', { parse: true }, function (err, rows, meta) {
+                if (err) {
+                    return test.done(err);
+                }
+                test.ok(_.isArray(rows));
+                test.equal(rows.length, 3);
+                // we expect an array of parsed docs because we used the
+                // `params.parse` option.
+                rows.forEach(function (row) {
+                    test.equal(typeof row.id, 'string');
+                    test.equal(typeof row._rev, 'string');
+                    test.equal(typeof row.type, 'string');
+                    test.equal(typeof row.createdAt, 'string');
+                });
+
+                test.equal(meta.total_rows, 3);
+                test.equal(meta.offset, 0);
+
+                db.query('by_type', function (err, rows, meta) {
+                    if (err) {
+                        return test.done(err);
+                    }
+                    test.ok(_.isArray(rows));
+                    test.equal(rows.length, 3);
+                    // Now we expect array of standard couchdb view results as
+                    // we did not use `params.parse`.
+                    rows.forEach(function (row) {
+                        test.equal(typeof row.id, 'string');
+                        test.equal(typeof row.key, 'string');
+                        test.equal(typeof row.value, 'object');
+                        test.equal(typeof row.value._id, 'string');
+                        test.equal(typeof row.value._rev, 'string');
+                        test.equal(typeof row.value.type, 'string');
+                        test.equal(typeof row.value.createdAt, 'string');
+                    });
+
+                    test.equal(meta.total_rows, 3);
+                    test.equal(meta.offset, 0);
+
+                    test.done();
+                });
+            });
+        });
+    });
+};
+
 exports['db.addIndex / db.removeIndex'] = function (test) {
     var hoodie = new PluginAPI(DEFAULT_OPTIONS);
     hoodie.database.add('foo', function (err, db) {

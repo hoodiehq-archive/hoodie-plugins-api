@@ -7,7 +7,9 @@
     "afterEach",
     "before",
     "beforeEach",
-    "root"
+    "root",
+    "emit",
+    "sum"
   ],
 
   "indent": 2,

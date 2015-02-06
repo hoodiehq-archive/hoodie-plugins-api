@@ -1407,3 +1407,4 @@ exports['db.addIndex twice without changes to map/reduce'] = function (test) {
   });
 };
 
+/* global emit */

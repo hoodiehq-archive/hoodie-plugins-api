@@ -1,4 +1,4 @@
-/* global emit */
+/* global emit, sum */
 var couchr = require('couchr');
 var moment = require('moment');
 var utils = require('./lib/utils');

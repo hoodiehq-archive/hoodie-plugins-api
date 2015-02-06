@@ -1,3 +1,4 @@
+/* global emit */
 var couchr = require('couchr');
 var moment = require('moment');
 var utils = require('./lib/utils');
@@ -1406,5 +1407,3 @@ exports['db.addIndex twice without changes to map/reduce'] = function (test) {
     });
   });
 };
-
-/* global emit */

@@ -1,6 +1,6 @@
 {
   "name": "hoodie-plugins-api",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Hoodie interface to CouchDB",
   "main": "lib/index.js",
   "repository": {
@@ -28,5 +28,5 @@
   "scripts": {
     "test": "grunt ci --verbose"
   },
-  "codename": "praiseworthy-oyster"
+  "codename": "prime-flamingo"
 }

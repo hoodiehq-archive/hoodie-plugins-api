@@ -8,13 +8,13 @@
 
 ```
 /hoodie-plugin-plugin_name
-    /pocket
+    /admin-dashboard
     hoodie.plugin_name.js
     index.js
     package.json
 ```
 
-* __/pocket__ - Extends the Pocket admin interface (contains a HTML fragment with code and styles)
+* __/admin-dashboard__ - Extends the admin interface (contains a HTML fragment with code and styles)
 * __hoodie.plugin_name.js__ - Extends the hoodie.js front-end API
 * __index.js__ - Node.js worker for handling tasks and other events (this is just the default location, you have more options here, see below)
 * __package.json__ - The plugin's metadata and dependencies (since the plugin should function as an npm module)

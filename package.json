@@ -8,11 +8,11 @@
     "url": "https://github.com/hoodiehq/hoodie-plugins-api.git"
   },
   "dependencies": {
-    "couchr": "0.0.13",
-    "uuid": "1.4.1",
     "async": "0.2.8",
+    "couchr": "0.0.13",
+    "lodash": "^3.10.0",
     "moment": "2.1.0",
-    "underscore": "1.4.4"
+    "uuid": "1.4.1"
   },
   "devDependencies": {
     "mkdirp": "0.3.5",

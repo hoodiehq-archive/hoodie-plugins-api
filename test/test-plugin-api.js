@@ -4,7 +4,7 @@ var moment = require('moment');
 var utils = require('./lib/utils');
 var async = require('async');
 var url = require('url');
-var _ = require('underscore');
+var _ = require('lodash');
 
 var PluginAPI = require('../lib/index').PluginAPI;
 

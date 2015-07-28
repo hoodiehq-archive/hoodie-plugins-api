@@ -8,3 +8,11 @@ node_modules
 *.swp
 .DS_Store
 .nyc_output
+
+# npm specific
+
+.editorconfig
+.gitattributes
+.gitignore
+.npmrc
+.travis.yml

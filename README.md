@@ -1,8 +1,9 @@
+![The Hoodie Mascot](https://avatars1.githubusercontent.com/u/1888826?v=3&s=200)
+
 # Hoodie Plugin API
 [![Build Status](https://travis-ci.org/hoodiehq/hoodie-plugins-api.svg)](https://travis-ci.org/hoodiehq/hoodie-plugins-api)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api#info=devDependencies)
-
 
 ## File and directory structure
 
@@ -126,7 +127,7 @@ hoodie.account.removeAll(type, callback)
 hoodie.account.on('change', handler)
 hoodie.account.on('type:change', handler)
 
-// use case: 
+// use case:
 // handle password resets
 hoodie.account.on('$passwordReset:change', function(object) {
   // set new password in user doc & send it via email
@@ -176,3 +177,10 @@ hoodie.sendEmail({
 // will be stripped in hoodie to prevent accidentally emailing out files
 // from the server
 ```
+
+# Triaging new issues or Pull Requests on this repository
+
+We are sorry to make you click one more time, but we are collecting [all triaging information
+in a single location](https://github.com/hoodiehq/hoodie/blob/master/TRIAGING.md). And here it is:
+
+https://github.com/hoodiehq/hoodie/blob/master/TRIAGING.md

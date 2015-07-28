@@ -15,18 +15,13 @@
     "underscore": "1.4.4"
   },
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "^0.9.x",
-    "grunt-contrib-nodeunit": "^0.4.1",
-    "grunt-release-hoodie": "^2.5.0",
     "mkdirp": "0.3.5",
     "multicouch": "0.8.1",
-    "nodeunit": "0.8.2",
+    "nodeunit": "^0.9.1",
     "request": "2.31.0",
     "rimraf": "2.1.4"
   },
   "scripts": {
-    "test": "grunt ci --verbose"
-  },
-  "codename": "prime-flamingo"
+    "test": "nodeunit test/test-*.js"
+  }
 }

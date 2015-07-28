@@ -15,14 +15,19 @@
     "uuid": "^2.0.1"
   },
   "devDependencies": {
+    "coveralls": "^2.11.3",
     "mkdirp": "^0.5.1",
     "multicouch": "^0.8.2",
     "nodeunit": "^0.9.1",
+    "nyc": "^3.0.1",
     "request": "^2.60.0",
     "rimraf": "^2.4.2",
     "standard": "^4.5.4"
   },
   "scripts": {
-    "test": "standard && nodeunit test/test-*.js"
+    "coverage": "nyc report",
+    "coverage:upload": "npm run coverage -- --reporter=text-lcov | coveralls",
+    "pretest": "standard",
+    "test": "nyc nodeunit test/test-*.js"
   }
 }

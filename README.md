@@ -2,6 +2,7 @@
 
 # Hoodie Plugin API
 [![Build Status](https://travis-ci.org/hoodiehq/hoodie-plugins-api.svg)](https://travis-ci.org/hoodiehq/hoodie-plugins-api)
+[![Coverage Status](https://coveralls.io/repos/hoodiehq/hoodie-plugins-api/badge.svg?branch=master&service=github)](https://coveralls.io/github/hoodiehq/hoodie-plugins-api?branch=master)
 [![Dependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api)
 [![devDependency Status](https://david-dm.org/hoodiehq/hoodie-plugins-api/dev-status.svg)](https://david-dm.org/hoodiehq/hoodie-plugins-api#info=devDependencies)
 
